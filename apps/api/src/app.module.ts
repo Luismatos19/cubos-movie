@@ -9,7 +9,6 @@ import { MoviesModule } from './movies/movies.module';
 @Module({
   imports: [PrismaModule, AuthModule, MoviesModule],
   controllers: [AppController],
-  providers: [AppService, PrismaService],
-  exports: [PrismaService],
+  providers: [AppService],
 })
 export class AppModule {}

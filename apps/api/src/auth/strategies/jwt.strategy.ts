@@ -24,7 +24,9 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     });
 
     if (!user) {
-      throw new UnauthorizedException();
+      throw new UnauthorizedException(
+        'Usuário não encontrado ou token inválido',
+      );
     }
 
     return { id: user.id, email: user.email, name: user.name };
