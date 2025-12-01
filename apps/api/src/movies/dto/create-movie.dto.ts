@@ -39,4 +39,13 @@ export class CreateMovieDto {
   @IsDate({ message: 'Data de lançamento deve ser uma data válida' })
   @IsNotEmpty({ message: 'Data de lançamento é obrigatória' })
   releaseDate: Date;
+
+  @ApiProperty({
+    description: 'URL da imagem do filme',
+    example: 'https://example.com/image.jpg',
+    type: String,
+  })
+  @IsString({ message: 'URL da imagem deve ser uma string' })
+  @IsNotEmpty({ message: 'URL da imagem é obrigatória' })
+  imageUrl: string;
 }

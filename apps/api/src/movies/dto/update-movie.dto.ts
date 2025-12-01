@@ -1,5 +1,11 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
-import { IsString, IsDate, IsOptional, MaxLength } from 'class-validator';
+import {
+  IsString,
+  IsDate,
+  IsOptional,
+  MaxLength,
+  IsNotEmpty,
+} from 'class-validator';
 import { Type } from 'class-transformer';
 
 export class UpdateMovieDto {
@@ -33,4 +39,7 @@ export class UpdateMovieDto {
   @Type(() => Date)
   @IsDate({ message: 'Data de lançamento deve ser uma data válida' })
   releaseDate?: Date;
+
+  @IsNotEmpty({ message: 'URL da imagem é obrigatória' })
+  imageUrl: string;
 }

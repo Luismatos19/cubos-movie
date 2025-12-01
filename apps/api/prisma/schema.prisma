@@ -23,14 +23,16 @@ model User {
 }
 
 model Movie {
-  id        Int      @id @default(autoincrement())
-  title     String
+  id          Int      @id @default(autoincrement())
+  title       String
   description String?
-  releaseDate DateTime 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  releaseDate DateTime
+  imageUrl    String   @default("")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 
   
   userId Int
   user   User @relation(fields: [userId], references: [id])
 }
+

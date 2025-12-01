@@ -3,22 +3,58 @@ import {
   NotFoundException,
   ForbiddenException,
   Logger,
+  BadRequestException,
+  InternalServerErrorException,
 } from '@nestjs/common';
+import { PutObjectCommand } from '@aws-sdk/client-s3';
+import { v4 as uuid } from 'uuid';
+
 import { PrismaService } from '../config/prisma/prisma.service';
 import { CreateMovieDto } from './dto/create-movie.dto';
 import { UpdateMovieDto } from './dto/update-movie.dto';
+import { r2Client } from '../config/r2.client';
 
 @Injectable()
 export class MoviesService {
   private readonly logger = new Logger(MoviesService.name);
+  private bucketName = process.env.R2_BUCKET_NAME!;
 
   constructor(private prisma: PrismaService) {}
 
-  async create(userId: number, createMovieDto: CreateMovieDto) {
-    this.logger.log(
-      `Criando filme para usuário ${userId}: ${createMovieDto.title}`,
-    );
+  async uploadBufferToR2(
+    originalName: string,
+    buffer: Buffer,
+    mimeType: string,
+  ) {
+    if (!mimeType.startsWith('image/')) {
+      throw new BadRequestException('Apenas imagens são permitidas');
+    }
 
+    const extension =
+      this.getExtension(originalName) || this.getExtFromMime(mimeType) || 'png';
+    const key = `movies/${uuid()}.${extension}`;
+
+    const command = new PutObjectCommand({
+      Bucket: this.bucketName,
+      Key: key,
+      Body: buffer,
+      ContentType: mimeType,
+    });
+
+    try {
+      await r2Client.send(command);
+
+      const fileUrl = `${process.env.R2_ENDPOINT}/${this.bucketName}/${key}`;
+      return { key, fileUrl };
+    } catch (err) {
+      console.error('R2 upload error', err);
+      throw new InternalServerErrorException(
+        'Erro ao enviar arquivo para storage',
+      );
+    }
+  }
+
+  async create(userId: number, createMovieDto: CreateMovieDto) {
     const movie = await this.prisma.movie.create({
       data: {
         ...createMovieDto,
@@ -31,8 +67,6 @@ export class MoviesService {
   }
 
   async findAll(userId: number) {
-    this.logger.log(`Buscando todos os filmes do usuário ${userId}`);
-
     const movies = await this.prisma.movie.findMany({
       where: {
         userId,
@@ -49,8 +83,6 @@ export class MoviesService {
   }
 
   async findOne(id: number, userId: number) {
-    this.logger.log(`Buscando filme ${id} para usuário ${userId}`);
-
     const movie = await this.prisma.movie.findUnique({
       where: { id },
     });
@@ -74,8 +106,6 @@ export class MoviesService {
   }
 
   async update(id: number, userId: number, updateMovieDto: UpdateMovieDto) {
-    this.logger.log(`Atualizando filme ${id} para usuário ${userId}`);
-
     const movie = await this.prisma.movie.findUnique({
       where: { id },
     });
@@ -104,8 +134,6 @@ export class MoviesService {
   }
 
   async remove(id: number, userId: number) {
-    this.logger.log(`Excluindo filme ${id} para usuário ${userId}`);
-
     const movie = await this.prisma.movie.findUnique({
       where: { id },
     });
@@ -129,5 +157,18 @@ export class MoviesService {
     });
 
     this.logger.log(`Filme ${id} excluído com sucesso`);
+  }
+
+  private getExtension(filename: string) {
+    const match = filename.match(/\.([a-zA-Z0-9]+)$/);
+    return match ? match[1] : null;
+  }
+
+  private getExtFromMime(mime: string) {
+    if (mime === 'image/jpeg') return 'jpg';
+    if (mime === 'image/png') return 'png';
+    if (mime === 'image/webp') return 'webp';
+    if (mime === 'image/gif') return 'gif';
+    return null;
   }
 }

@@ -30,9 +30,7 @@ export function LoginPage() {
 
   const onSubmit = (data: LoginSchema): void => {
     login(data, {
-      onSuccess: () => {
-        alert("Login realizado com sucesso!");
-      },
+      onSuccess: () => {},
     });
   };
 
