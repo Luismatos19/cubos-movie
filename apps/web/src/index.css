@@ -1,68 +1,88 @@
-:root {
-  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
-  line-height: 1.5;
-  font-weight: 400;
+@import "tailwindcss";
+@import "@radix-ui/colors/violet.css";
+@import "@radix-ui/colors/violet-dark.css";
+@import "@radix-ui/colors/mauve.css";
+@import "@radix-ui/colors/mauve-dark.css";
+@import "@radix-ui/colors/slate.css";
+@import "@radix-ui/colors/slate-dark.css";
+@import "@radix-ui/colors/red.css";
+@import "@radix-ui/colors/red-dark.css";
 
-  color-scheme: light dark;
-  color: rgba(255, 255, 255, 0.87);
-  background-color: #242424;
+@theme {
+  --color-background: white;
+  --color-foreground: var(--slate-12);
+  --color-card: white;
+  --color-card-foreground: var(--slate-12);
+  --color-popover: white;
+  --color-popover-foreground: var(--slate-12);
+  --color-primary: var(--violet-9);
+  --color-primary-foreground: white;
+  --color-secondary: var(--slate-3);
+  --color-secondary-foreground: var(--slate-12);
+  --color-muted: var(--slate-3);
+  --color-muted-foreground: var(--slate-11);
+  --color-accent: var(--violet-3);
+  --color-accent-foreground: var(--violet-11);
+  --color-destructive: var(--red-9);
+  --color-destructive-foreground: white;
+  --color-border: var(--slate-6);
+  --color-input: var(--slate-4);
+  --color-ring: var(--violet-8);
 
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-}
+  --radius-lg: 0.5rem;
+  --radius-md: calc(0.5rem - 2px);
+  --radius-sm: calc(0.5rem - 4px);
 
-a {
-  font-weight: 500;
-  color: #646cff;
-  text-decoration: inherit;
-}
-a:hover {
-  color: #535bf2;
-}
+  --animate-accordion-down: accordion-down 0.2s ease-out;
+  --animate-accordion-up: accordion-up 0.2s ease-out;
 
-body {
-  margin: 0;
-  display: flex;
-  place-items: center;
-  min-width: 320px;
-  min-height: 100vh;
-}
-
-h1 {
-  font-size: 3.2em;
-  line-height: 1.1;
-}
-
-button {
-  border-radius: 8px;
-  border: 1px solid transparent;
-  padding: 0.6em 1.2em;
-  font-size: 1em;
-  font-weight: 500;
-  font-family: inherit;
-  background-color: #1a1a1a;
-  cursor: pointer;
-  transition: border-color 0.25s;
-}
-button:hover {
-  border-color: #646cff;
-}
-button:focus,
-button:focus-visible {
-  outline: 4px auto -webkit-focus-ring-color;
-}
-
-@media (prefers-color-scheme: light) {
-  :root {
-    color: #213547;
-    background-color: #ffffff;
+  @keyframes accordion-down {
+    from {
+      height: 0;
+    }
+    to {
+      height: var(--radix-accordion-content-height);
+    }
   }
-  a:hover {
-    color: #747bff;
+  @keyframes accordion-up {
+    from {
+      height: var(--radix-accordion-content-height);
+    }
+    to {
+      height: 0;
+    }
   }
-  button {
-    background-color: #f9f9f9;
+}
+
+@layer base {
+  .dark {
+    --color-background: var(--mauve-dark-1);
+    --color-foreground: var(--mauve-dark-12);
+    --color-card: var(--mauve-dark-3);
+    --color-card-foreground: var(--mauve-dark-12);
+    --color-popover: var(--mauve-dark-2);
+    --color-popover-foreground: var(--mauve-dark-12);
+    --color-primary: var(--violet-dark-9);
+    --color-primary-foreground: var(--mauve-dark-1);
+    --color-secondary: var(--mauve-dark-4);
+    --color-secondary-foreground: var(--mauve-dark-12);
+    --color-muted: var(--mauve-dark-3);
+    --color-muted-foreground: var(--mauve-dark-11);
+    --color-accent: var(--violet-dark-4);
+    --color-accent-foreground: var(--violet-dark-11);
+    --color-destructive: var(--red-dark-9);
+    --color-destructive-foreground: var(--mauve-dark-12);
+    --color-border: var(--mauve-dark-6);
+    --color-input: var(--mauve-dark-3);
+    --color-ring: var(--violet-dark-8);
+  }
+
+  * {
+    @apply border-border;
+  }
+  
+  body {
+    @apply bg-background text-foreground;
+    font-family: "Roboto", sans-serif;
   }
 }
