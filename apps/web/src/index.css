@@ -1,88 +1,86 @@
 @import "tailwindcss";
-@import "@radix-ui/colors/violet.css";
-@import "@radix-ui/colors/violet-dark.css";
+
+/* IMPORTA OS TOKENS DO RADIX */
+@import "@radix-ui/colors/purple.css";
+@import "@radix-ui/colors/purple-dark.css";
 @import "@radix-ui/colors/mauve.css";
 @import "@radix-ui/colors/mauve-dark.css";
-@import "@radix-ui/colors/slate.css";
-@import "@radix-ui/colors/slate-dark.css";
 @import "@radix-ui/colors/red.css";
 @import "@radix-ui/colors/red-dark.css";
 
 @theme {
-  --color-background: white;
-  --color-foreground: var(--slate-12);
-  --color-card: white;
-  --color-card-foreground: var(--slate-12);
-  --color-popover: white;
-  --color-popover-foreground: var(--slate-12);
-  --color-primary: var(--violet-9);
-  --color-primary-foreground: white;
-  --color-secondary: var(--slate-3);
-  --color-secondary-foreground: var(--slate-12);
-  --color-muted: var(--slate-3);
-  --color-muted-foreground: var(--slate-11);
-  --color-accent: var(--violet-3);
-  --color-accent-foreground: var(--violet-11);
-  --color-destructive: var(--red-9);
-  --color-destructive-foreground: white;
-  --color-border: var(--slate-6);
-  --color-input: var(--slate-4);
-  --color-ring: var(--violet-8);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
 
-  --radius-lg: 0.5rem;
-  --radius-md: calc(0.5rem - 2px);
-  --radius-sm: calc(0.5rem - 4px);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
 
-  --animate-accordion-down: accordion-down 0.2s ease-out;
-  --animate-accordion-up: accordion-up 0.2s ease-out;
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
 
-  @keyframes accordion-down {
-    from {
-      height: 0;
-    }
-    to {
-      height: var(--radix-accordion-content-height);
-    }
-  }
-  @keyframes accordion-up {
-    from {
-      height: var(--radix-accordion-content-height);
-    }
-    to {
-      height: 0;
-    }
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+
+  --radius-lg: var(--radius);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-sm: calc(var(--radius) - 4px);
+}
+
+@layer base {
+  :root {
+    /* 🎨 Light Mode — Mauve + Purple */
+    --background: var(--mauve-1);
+    --foreground: var(--mauve-12);
+
+    --card: var(--mauve-3);
+    --card-foreground: var(--mauve-12);
+
+    --popover: var(--mauve-1);
+    --popover-foreground: var(--mauve-12);
+
+    --primary: var(--purple-9);
+    --primary-foreground: white;
+
+    --secondary: var(--mauve-3);
+    --secondary-foreground: var(--mauve-12);
+
+    --muted: var(--mauve-3);
+    --muted-foreground: var(--mauve-11);
+
+    --accent: var(--mauve-3);
+    --accent-foreground: var(--mauve-12);
+
+    --destructive: var(--red-9);
+    --destructive-foreground: white;
+
+    --border: var(--mauve-6);
+    --input: var(--mauve-1);
+    --ring: var(--purple-8);
+
+    --radius: 0.5rem;
   }
 }
 
 @layer base {
-  .dark {
-    --color-background: var(--mauve-dark-1);
-    --color-foreground: var(--mauve-dark-12);
-    --color-card: var(--mauve-dark-3);
-    --color-card-foreground: var(--mauve-dark-12);
-    --color-popover: var(--mauve-dark-2);
-    --color-popover-foreground: var(--mauve-dark-12);
-    --color-primary: var(--violet-dark-9);
-    --color-primary-foreground: var(--mauve-dark-1);
-    --color-secondary: var(--mauve-dark-4);
-    --color-secondary-foreground: var(--mauve-dark-12);
-    --color-muted: var(--mauve-dark-3);
-    --color-muted-foreground: var(--mauve-dark-11);
-    --color-accent: var(--violet-dark-4);
-    --color-accent-foreground: var(--violet-dark-11);
-    --color-destructive: var(--red-dark-9);
-    --color-destructive-foreground: var(--mauve-dark-12);
-    --color-border: var(--mauve-dark-6);
-    --color-input: var(--mauve-dark-3);
-    --color-ring: var(--violet-dark-8);
-  }
-
   * {
     @apply border-border;
   }
-  
   body {
     @apply bg-background text-foreground;
-    font-family: "Roboto", sans-serif;
   }
 }

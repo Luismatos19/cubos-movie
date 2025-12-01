@@ -1,12 +1,14 @@
 import { Sun, Moon } from "lucide-react";
 import { Button } from "../ui/button";
 import { useThemeStore } from "../../stores/useThemeStore";
+import { useAuth } from "@/hooks/useAuth";
 
 export function Header() {
   const { isDark, toggleTheme } = useThemeStore();
+  const { logout, isAuthenticated } = useAuth();
 
   return (
-    <header className="flex h-[72px] items-center justify-between border-b border-border bg-background/20 px-4 backdrop-blur-sm sm:px-4">
+    <header className="flex h-[72px] items-center justify-between border-b border-border bg-background/50 text-foreground px-4 backdrop-blur-sm sm:px-4">
       <div className="flex items-center gap-4">
         <svg
           width="36"
@@ -77,12 +79,15 @@ export function Header() {
             <Moon className="h-[18px] w-[18px]" />
           )}
         </Button>
-        <Button
-          type="button"
-          className="h-11 rounded-sm bg-primary px-5 font-['Roboto'] text-base font-normal text-primary-foreground hover:bg-primary/90"
-        >
-          Logout
-        </Button>
+        {isAuthenticated && (
+          <Button
+            type="button"
+            onClick={logout}
+            className="h-11 rounded-sm bg-primary px-5 font-['Roboto'] text-base font-normal text-primary-foreground hover:bg-primary/90"
+          >
+            Logout
+          </Button>
+        )}
       </div>
     </header>
   );

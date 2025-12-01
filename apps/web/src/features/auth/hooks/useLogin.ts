@@ -1,5 +1,6 @@
 import { useMutation } from "@tanstack/react-query";
-import { api } from "../lib/api";
+import { api } from "../../../lib/api";
+import { useAuthStore } from "../../../stores/useAuthStore";
 
 interface LoginCredentials {
   email: string;
@@ -10,18 +11,18 @@ interface LoginResponse {
   access_token: string;
 }
 
-const loginUser = async (
-  credentials: LoginCredentials
-): Promise<LoginResponse> => {
+const loginUser = async (credentials: LoginCredentials) => {
   const { data } = await api.post<LoginResponse>("/auth/login", credentials);
   return data;
 };
 
-export const useLogin = () => {
+export function useLogin() {
+  const setToken = useAuthStore((state) => state.setToken);
+
   return useMutation({
     mutationFn: loginUser,
-    onSuccess: (data) => {
-      localStorage.setItem("token", data.access_token);
+    onSuccess: ({ access_token }) => {
+      setToken(access_token);
     },
   });
-};
+}
