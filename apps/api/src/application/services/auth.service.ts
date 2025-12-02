@@ -1,31 +1,34 @@
 import {
-  Injectable,
-  UnauthorizedException,
   ConflictException,
+  Injectable,
   Logger,
+  UnauthorizedException,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import * as bcrypt from 'bcrypt';
-import { PrismaService } from '../config/prisma/prisma.service';
-import { LoginDto } from './dto/login.dto';
-import { RegisterDto } from './dto/register.dto';
-import { JwtPayload } from './strategies/jwt.strategy';
+
+import { UsersRepository } from '../../infra/repositories/users.repository';
+import { BcryptService } from '../../infra/security/bcrypt.service';
+import { RegisterDto } from '../../auth/dto/register.dto';
+import { LoginDto } from '../../auth/dto/login.dto';
+import { JwtPayload } from '../../auth/strategies/jwt.strategy';
+import type { User } from '../../domain/user/user.entity';
 
 @Injectable()
 export class AuthService {
   private readonly logger = new Logger(AuthService.name);
 
   constructor(
-    private prisma: PrismaService,
-    private jwtService: JwtService,
+    private readonly usersRepository: UsersRepository,
+    private readonly passwordService: BcryptService,
+    private readonly jwtService: JwtService,
   ) {}
 
   async register(registerDto: RegisterDto): Promise<{ access_token: string }> {
     this.logger.log(`Tentativa de registro para email: ${registerDto.email}`);
 
-    const existingUser = await this.prisma.user.findUnique({
-      where: { email: registerDto.email },
-    });
+    const existingUser = await this.usersRepository.findByEmail(
+      registerDto.email,
+    );
 
     if (existingUser) {
       this.logger.warn(
@@ -34,31 +37,23 @@ export class AuthService {
       throw new ConflictException('Este email já está cadastrado');
     }
 
-    const hashedPassword = await bcrypt.hash(registerDto.password, 10);
+    const hashedPassword = await this.passwordService.hash(
+      registerDto.password,
+    );
 
-    const user = await this.prisma.user.create({
-      data: {
-        name: registerDto.name,
-        email: registerDto.email,
-        password: hashedPassword,
-      },
+    const user = await this.usersRepository.create({
+      name: registerDto.name,
+      email: registerDto.email,
+      password: hashedPassword,
     });
 
     this.logger.log(`Usuário registrado com sucesso: ${user.id}`);
 
-    const payload: JwtPayload = { sub: user.id, email: user.email };
-
-    return {
-      access_token: this.jwtService.sign(payload),
-    };
+    return this.buildToken(user);
   }
 
   async login(loginDto: LoginDto): Promise<{ access_token: string }> {
-    this.logger.log(`Tentativa de login para email: ${loginDto.email}`);
-
-    const user = await this.prisma.user.findUnique({
-      where: { email: loginDto.email },
-    });
+    const user = await this.usersRepository.findByEmail(loginDto.email);
 
     if (!user) {
       this.logger.warn(
@@ -67,7 +62,7 @@ export class AuthService {
       throw new UnauthorizedException('Credenciais inválidas');
     }
 
-    const isPasswordValid = await bcrypt.compare(
+    const isPasswordValid = await this.passwordService.compare(
       loginDto.password,
       user.password,
     );
@@ -79,8 +74,10 @@ export class AuthService {
       throw new UnauthorizedException('Credenciais inválidas');
     }
 
-    this.logger.log(`Login realizado com sucesso para usuário: ${user.id}`);
+    return this.buildToken(user);
+  }
 
+  private buildToken(user: User) {
     const payload: JwtPayload = { sub: user.id, email: user.email };
 
     return {

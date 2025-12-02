@@ -1,21 +1,47 @@
+import { memo, useCallback, useMemo, type ChangeEvent } from "react";
 import { Plus, Search, SlidersHorizontal } from "lucide-react";
 import { useDebounce } from "use-debounce";
 
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { MovieCard } from "../components/MovieCard";
-import { PaginationControls } from "../components/PaginationControls";
+import { Pagination } from "../components/Pagination";
 import { useMoviesFilters, useFetchMovies } from "../hooks/useMovies";
 
 const PAGE_SIZE = 10;
 import backgroundImage from "@/assets/background-image.png";
 
 export function MoviesPage() {
-  const { search, setSearch, page, setPage } = useMoviesFilters();
+  const search = useMoviesFilters((state) => state.search);
+  const page = useMoviesFilters((state) => state.page);
+  const setSearch = useMoviesFilters((state) => state.setSearch);
+  const setPage = useMoviesFilters((state) => state.setPage);
+
   const [debouncedSearch] = useDebounce(search, 400);
   const { data, isLoading, error } = useFetchMovies(page, debouncedSearch);
-  const movies = data?.items ?? [];
-  console.log(movies);
+
+  const movies = useMemo(() => data?.items ?? [], [data]);
+  const totalItems = data?.pagination.total ?? 0;
+
+  const handleSearchChange = useCallback(
+    (event: ChangeEvent<HTMLInputElement>) => {
+      setSearch(event.target.value);
+    },
+    [setSearch]
+  );
+
+  const handleClearSearch = useCallback(() => {
+    setSearch("");
+  }, [setSearch]);
+
+  const handlePageChange = useCallback(
+    (nextPage: number) => {
+      setPage(nextPage);
+    },
+    [setPage]
+  );
+
+  const handleAddMovie = useCallback(() => {}, []);
 
   return (
     <main className="flex-1 bg-background text-foreground">
@@ -23,21 +49,21 @@ export function MoviesPage() {
         <div className="pointer-events-none absolute inset-0 overflow-hidden opacity-40">
           <img
             src={backgroundImage}
-            alt=""
+            alt="sala de cinema"
             className="h-full w-full object-cover"
           />
         </div>
         <div className="absolute inset-0 bg-gradient-to-b from-background via-background/80 to-background" />
         <div className="relative mx-auto w-full max-w-[1380px] px-4 py-10 sm:px-8 lg:px-12">
           <div className="flex flex-col gap-6">
-            <div className="flex flex-wrap gap-4">
+            <div className="flex flex-wrap gap-4 justify-end ">
               <div className="relative flex-1 min-w-[260px]">
                 <Search className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                 <Input
                   value={search}
-                  onChange={(event) => setSearch(event.target.value)}
+                  onChange={handleSearchChange}
                   placeholder="Pesquise por filmes"
-                  className="h-12 border-border bg-muted/40 pl-12 text-foreground placeholder:text-muted-foreground focus:border-ring"
+                  className="h-12 border-border bg-muted/20 pl-12 max-w-122 text-foreground placeholder:text-muted-foreground focus:border-ring"
                 />
               </div>
               <div className="flex w-full gap-3 sm:w-auto">
@@ -50,7 +76,7 @@ export function MoviesPage() {
                 </Button>
                 <Button
                   className="flex flex-1 items-center justify-center gap-2 rounded-[4px] bg-primary px-5 py-2 text-sm font-semibold text-primary-foreground transition hover:bg-primary/90 sm:flex-none"
-                  onClick={() => {}}
+                  onClick={handleAddMovie}
                 >
                   <Plus className="h-4 w-4" />
                   Adicionar filme
@@ -78,19 +104,19 @@ export function MoviesPage() {
                         <Button
                           variant="outline"
                           className="rounded-full border-border text-foreground hover:bg-muted/20"
-                          onClick={() => setSearch("")}
+                          onClick={handleClearSearch}
                         >
                           Limpar busca
                         </Button>
                       </div>
                     )}
                   </div>
-                  {data && (
-                    <PaginationControls
+                  {!!movies.length && (
+                    <Pagination
                       page={page}
                       pageSize={PAGE_SIZE}
-                      totalItems={data.pagination.total}
-                      onChange={setPage}
+                      totalItems={totalItems}
+                      onPageChange={handlePageChange}
                     />
                   )}
                 </>
@@ -103,7 +129,7 @@ export function MoviesPage() {
   );
 }
 
-function MoviesSkeleton() {
+const MoviesSkeleton = memo(function MoviesSkeleton() {
   return (
     <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
       {Array.from({ length: PAGE_SIZE }).map((_, index) => (
@@ -114,4 +140,4 @@ function MoviesSkeleton() {
       ))}
     </div>
   );
-}
+});

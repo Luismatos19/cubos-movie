@@ -22,7 +22,7 @@ const registerSchema = z
 
 type RegisterSchema = z.infer<typeof registerSchema>;
 
-const HERO_IMAGE_URL = "/Background-image.png";
+const HERO_IMAGE_URL = "@/assets/background-image.png";
 
 export function RegisterPage() {
   const navigate = useNavigate();
@@ -42,7 +42,6 @@ export function RegisterPage() {
       email: data.email,
       password: data.password,
     });
-    alert("Cadastro realizado com sucesso!");
     navigate("/login", { replace: true });
   };
 

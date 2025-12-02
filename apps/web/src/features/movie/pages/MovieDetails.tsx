@@ -1,8 +1,9 @@
+import { memo, useMemo } from "react";
 import { useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 
 import { api } from "@/lib/api";
-import type { Movie } from "../api/types";
+import type { Movie } from "../types/types";
 
 type Stat = {
   label: string;
@@ -23,6 +24,58 @@ export function MovieDetailsPage() {
       return response.data;
     },
   });
+
+  const releaseDate = data?.releaseDate;
+  const duration = data?.duration ?? 0;
+  const classification = data?.classification ?? 0;
+  const revenue = data?.revenue ?? 0;
+  const trailer = data?.trailerUrl ?? null;
+  const rating = data?.rating ?? 0;
+  const description = data?.description ?? "";
+  const imageUrl = data?.imageUrl ?? "";
+
+  const releaseLabel = useMemo(
+    () => (releaseDate ? formatDate(releaseDate) : "Data indisponível"),
+    [releaseDate]
+  );
+  const durationLabel = useMemo(() => formatDuration(duration), [duration]);
+  const classificationLabel = useMemo(
+    () => (classification > 0 ? `${classification} anos` : "Livre"),
+    [classification]
+  );
+  const revenueLabel = useMemo(
+    () => (revenue ? formatCurrency(revenue) : "—"),
+    [revenue]
+  );
+  const trailerUrl = useMemo(() => normalizeTrailerUrl(trailer), [trailer]);
+  const ratingValue = useMemo(
+    () => Math.max(0, Math.min(100, Math.round(rating))),
+    [rating]
+  );
+
+  const synopsis = useMemo(
+    () =>
+      description ||
+      "Nenhuma sinopse foi cadastrada para este filme até o momento.",
+    [description]
+  );
+
+  const infoPrimary = useMemo<Stat[]>(
+    () => [
+      { label: "Lançamento", value: releaseLabel },
+      { label: "Duração", value: durationLabel },
+      { label: "Classificação", value: classificationLabel },
+    ],
+    [releaseLabel, durationLabel, classificationLabel]
+  );
+
+  const infoSecondary = useMemo<Stat[]>(
+    () => [{ label: "Receita", value: revenueLabel }],
+    [revenueLabel]
+  );
+
+  const heroImage = useMemo(() => imageUrl || detailBackground, [imageUrl]);
+  const posterImage = heroImage;
 
   if (!movieId) {
     return (
@@ -45,29 +98,6 @@ export function MovieDetailsPage() {
       />
     );
   }
-
-  const releaseLabel = formatDate(data.releaseDate);
-  const durationLabel = formatDuration(data.duration);
-  const classificationLabel =
-    data.classification > 0 ? `${data.classification} anos` : "Livre";
-  const revenueLabel = formatCurrency(data.revenue);
-  const trailerUrl = normalizeTrailerUrl(data.trailerUrl);
-  const ratingValue = Math.max(0, Math.min(100, Math.round(data.rating)));
-
-  const synopsis =
-    data.description ||
-    "Nenhuma sinopse foi cadastrada para este filme até o momento.";
-
-  const infoPrimary: Stat[] = [
-    { label: "Lançamento", value: releaseLabel },
-    { label: "Duração", value: durationLabel },
-    { label: "Classificação", value: classificationLabel },
-  ];
-
-  const infoSecondary: Stat[] = [{ label: "Receita", value: revenueLabel }];
-
-  const heroImage = data.imageUrl || detailBackground;
-  const posterImage = data.imageUrl || detailBackground;
 
   return (
     <section className="flex-1 bg-background text-foreground">
@@ -203,7 +233,13 @@ export function MovieDetailsPage() {
   );
 }
 
-function InfoBlock({ title, value }: { title: string; value: string }) {
+const InfoBlock = memo(function InfoBlock({
+  title,
+  value,
+}: {
+  title: string;
+  value: string;
+}) {
   return (
     <div className="rounded-[4px] border border-border bg-muted/30 px-4 py-3">
       <p className="text-xs font-bold uppercase tracking-[0.3em] text-muted-foreground">
@@ -212,9 +248,9 @@ function InfoBlock({ title, value }: { title: string; value: string }) {
       <p className="text-lg font-semibold text-foreground">{value}</p>
     </div>
   );
-}
+});
 
-function StatCard({ stat }: { stat: Stat }) {
+const StatCard = memo(function StatCard({ stat }: { stat: Stat }) {
   return (
     <div className="rounded-[4px] border border-border bg-muted/30 px-4 py-3">
       <p className="text-xs font-bold uppercase tracking-[0.3em] text-muted-foreground">
@@ -223,9 +259,15 @@ function StatCard({ stat }: { stat: Stat }) {
       <p className="text-sm font-semibold text-foreground">{stat.value}</p>
     </div>
   );
-}
+});
 
-function RatingCircle({ value, size = 120 }: { value: number; size?: number }) {
+const RatingCircle = memo(function RatingCircle({
+  value,
+  size = 120,
+}: {
+  value: number;
+  size?: number;
+}) {
   const angle = Math.min(360, Math.max(0, Math.round((value / 100) * 360)));
   const innerSize = size - 20;
   return (
@@ -246,9 +288,9 @@ function RatingCircle({ value, size = 120 }: { value: number; size?: number }) {
       </div>
     </div>
   );
-}
+});
 
-function DetailsSkeleton() {
+const DetailsSkeleton = memo(function DetailsSkeleton() {
   return (
     <section className="flex-1 bg-background text-foreground">
       <div className="relative isolate">
@@ -269,9 +311,9 @@ function DetailsSkeleton() {
       </div>
     </section>
   );
-}
+});
 
-function StateMessage({
+const StateMessage = memo(function StateMessage({
   title,
   description,
 }: {
@@ -286,7 +328,7 @@ function StateMessage({
       </div>
     </section>
   );
-}
+});
 
 function formatDate(value: string) {
   const date = new Date(value);

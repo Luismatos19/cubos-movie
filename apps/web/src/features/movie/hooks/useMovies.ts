@@ -1,7 +1,7 @@
 import { create } from "zustand";
 import { useQuery } from "@tanstack/react-query";
 import { api } from "@/lib/api";
-import type { PaginatedMovies } from "../api/types";
+import type { PaginatedMovies } from "../types/types";
 
 interface MoviesFiltersState {
   page: number;

@@ -27,9 +27,7 @@ export function LoginPage() {
   });
 
   const onSubmit = (data: LoginSchema): void => {
-    login(data, {
-      onSuccess: () => {},
-    });
+    login(data);
   };
 
   return (
@@ -75,7 +73,7 @@ export function LoginPage() {
         </div>
 
         {isError && (
-          <p className="text-sm text-destructive">
+          <p className="text-xs text-destructive">
             Credenciais inválidas. Verifique seu e-mail e senha.
           </p>
         )}

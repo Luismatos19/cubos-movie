@@ -19,7 +19,7 @@ import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { memoryStorage } from 'multer';
 
-import { MoviesService } from './movies.service';
+import { MoviesService } from '../application/services/movies.service';
 import { UpdateMovieDto } from './dto/update-movie.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
@@ -63,20 +63,7 @@ export class MoviesController {
     @UploadedFile() file: Express.Multer.File,
     @Body() body: CreateMovieDto,
   ) {
-    if (!file) {
-      throw new BadRequestException('Arquivo obrigatório');
-    }
-
-    const { fileUrl } = await this.moviesService.uploadBufferToR2(
-      file.originalname,
-      file.buffer,
-      file.mimetype,
-    );
-
-    return this.moviesService.create(user.id, {
-      ...body,
-      imageUrl: fileUrl,
-    });
+    return this.moviesService.create(user.id, body, file);
   }
 
   @Get()

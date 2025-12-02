@@ -46,7 +46,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n    \"name\": \"John Doe\",\n    \"email\": \"john.doe@example.com\",\n    \"password\": \"password123\"\n}"
+              "raw": "{\n    \"name\": \"John Doe\",\n    \"email\": \"john.doe@example.com\",\n    \"password\": \"password123\",\n    \"confirmPassword\": \"password123\"\n}"
             },
             "url": {
               "raw": "{{baseUrl}}/auth/register",
@@ -140,17 +140,28 @@
             "method": "POST",
             "header": [
               {
-                "key": "Content-Type",
-                "value": "application/json"
-              },
-              {
                 "key": "Authorization",
                 "value": "Bearer {{authToken}}"
               }
             ],
             "body": {
-              "mode": "raw",
-              "raw": "{\n    \"title\": \"The Matrix\",\n    \"description\": \"A computer hacker learns about the true nature of reality\",\n    \"releaseDate\": \"1999-03-31\"\n}"
+              "mode": "formdata",
+              "formdata": [
+                { "key": "title", "value": "Oppenheimer", "type": "text" },
+                {
+                  "key": "description",
+                  "value": "A história do criador da bomba atômica.",
+                  "type": "text"
+                },
+                { "key": "releaseDate", "value": "2023-07-21", "type": "text" },
+                { "key": "classification", "value": "14", "type": "text" },
+                { "key": "rating", "value": "93", "type": "text" },
+                { "key": "duration", "value": "181", "type": "text" },
+                { "key": "revenue", "value": "960000000", "type": "text" },
+                { "key": "genreIds[]", "value": "1", "type": "text" },
+                { "key": "genreIds[]", "value": "4", "type": "text" },
+                { "key": "file", "type": "file", "src": [] }
+              ]
             },
             "url": {
               "raw": "{{baseUrl}}/movies",
@@ -171,9 +182,23 @@
               }
             ],
             "url": {
-              "raw": "{{baseUrl}}/movies",
+              "raw": "{{baseUrl}}/movies?page=1&limit=10&search=",
               "host": ["{{baseUrl}}"],
-              "path": ["movies"]
+              "path": ["movies"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "10"
+                },
+                {
+                  "key": "search",
+                  "value": ""
+                }
+              ]
             }
           },
           "response": []
@@ -250,7 +275,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n    \"title\": \"The Matrix Reloaded\",\n    \"description\": \"Updated description for The Matrix\"\n}"
+              "raw": "{\n    \"title\": \"Oppenheimer (Updated)\",\n    \"rating\": 95\n}"
             },
             "url": {
               "raw": "{{baseUrl}}/movies/{{movieId}}",
@@ -267,8 +292,8 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status code is 200', function () {",
-                  "    pm.expect(pm.response.code).to.equal(200);",
+                  "pm.test('Status code is 204 or 200', function () {",
+                  "    pm.expect(pm.response.code).to.be.oneOf([200, 204]);",
                   "});"
                 ],
                 "type": "text/javascript"

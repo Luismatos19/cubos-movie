@@ -1,11 +1,17 @@
+import { memo, useCallback } from "react";
 import { Sun, Moon } from "lucide-react";
 import { Button } from "../ui/button";
 import { useThemeStore } from "../../stores/useThemeStore";
 import { useAuth } from "@/hooks/useAuth";
 
-export function Header() {
-  const { isDark, toggleTheme } = useThemeStore();
+export const Header = memo(function Header() {
+  const isDark = useThemeStore((state) => state.isDark);
+  const toggleTheme = useThemeStore((state) => state.toggleTheme);
   const { logout, isAuthenticated } = useAuth();
+
+  const handleToggleTheme = () => toggleTheme();
+
+  const handleLogout = () => logout();
 
   return (
     <header className="flex h-[72px] items-center justify-between border-b border-border bg-background/50 text-foreground px-4 backdrop-blur-sm sm:px-4">
@@ -56,7 +62,7 @@ export function Header() {
           type="button"
           variant="ghost"
           size="icon"
-          onClick={toggleTheme}
+          onClick={handleToggleTheme}
           className="h-11 w-11 rounded-sm bg-primary/10 text-foreground hover:bg-primary/15"
         >
           {isDark ? (
@@ -68,7 +74,7 @@ export function Header() {
         {isAuthenticated && (
           <Button
             type="button"
-            onClick={logout}
+            onClick={handleLogout}
             className="h-11 rounded-sm bg-primary px-5 font-['Roboto'] text-base font-normal text-primary-foreground hover:bg-primary/90"
           >
             Logout
@@ -77,4 +83,4 @@ export function Header() {
       </div>
     </header>
   );
-}
+});
