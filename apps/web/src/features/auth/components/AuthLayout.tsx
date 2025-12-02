@@ -13,8 +13,12 @@ export const AuthLayout = memo(function AuthLayout({
   return (
     <main className="relative flex flex-1 items-center justify-center">
       <div
-        className="pointer-events-none absolute left-1/2 top-0 h-[564px] w-[1440px] -translate-x-1/2 bg-repeat-x bg-top opacity-60"
-        style={{ backgroundImage: `url(${backgroundImage})` }}
+        className="pointer-events-none absolute left-1/2 top-0 h-[564px] w-screen -translate-x-1/2 
+             bg-repeat-x bg-top "
+        style={{
+          backgroundImage: `url(${backgroundImage})`,
+          backgroundSize: "auto",
+        }}
       />
 
       <section className="relative w-full px-4 py-10">

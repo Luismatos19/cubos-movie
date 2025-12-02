@@ -39,6 +39,12 @@ export class MoviesService {
       page,
       limit,
       search: query.search,
+      minDuration: query.minDuration,
+      maxDuration: query.maxDuration,
+      startDate: query.startDate,
+      endDate: query.endDate,
+      genre: query.genre,
+      maxClassification: query.maxClassification,
     });
 
     return {

@@ -9,6 +9,12 @@ type MovieQuery = {
   page: number;
   limit: number;
   search?: string;
+  minDuration?: number;
+  maxDuration?: number;
+  startDate?: string;
+  endDate?: string;
+  genre?: string;
+  maxClassification?: number;
 };
 
 type MoviePersistenceData = {
@@ -31,18 +37,14 @@ export class MoviesRepository {
   constructor(private readonly prisma: PrismaService) {}
 
   async create(userId: number, data: MoviePersistenceData): Promise<Movie> {
-    const { genreIds = [], revenue = 0, ...movieData } = data;
+    const { genreIds = [], revenue, ...movieData } = data;
 
     const movie = await this.prisma.movie.create({
       data: {
         ...movieData,
-        revenue: new Prisma.Decimal(revenue),
         userId,
-        genres: genreIds.length
-          ? {
-              create: this.buildGenreConnections(genreIds),
-            }
-          : undefined,
+        revenue: this.formatRevenue(revenue),
+        genres: this.buildGenresCreate(genreIds),
       },
       include: this.include,
     });
@@ -60,14 +62,8 @@ export class MoviesRepository {
       where: { id },
       data: {
         ...movieData,
-        revenue:
-          revenue !== undefined ? new Prisma.Decimal(revenue) : undefined,
-        genres: Array.isArray(genreIds)
-          ? {
-              deleteMany: {},
-              create: this.buildGenreConnections(genreIds),
-            }
-          : undefined,
+        revenue: this.formatRevenue(revenue),
+        genres: this.buildGenresUpdate(genreIds),
       },
       include: this.include,
     });
@@ -76,15 +72,8 @@ export class MoviesRepository {
   }
 
   async findAll(userId: number, query: MovieQuery) {
-    const { page, limit, search } = query;
-    const where: Prisma.MovieWhereInput = { userId };
-
-    if (search) {
-      where.title = {
-        contains: search,
-        mode: 'insensitive',
-      };
-    }
+    const where = this.buildWhere(query, userId);
+    const { page, limit } = query;
 
     const [total, movies] = await Promise.all([
       this.prisma.movie.count({ where }),
@@ -92,16 +81,14 @@ export class MoviesRepository {
         where,
         skip: (page - 1) * limit,
         take: limit,
-        orderBy: {
-          releaseDate: 'desc',
-        },
+        orderBy: { releaseDate: 'desc' },
         include: this.include,
       }),
     ]);
 
     return {
       total,
-      movies: movies.map((movie) => MovieMapper.toDomain(movie)),
+      movies: movies.map(MovieMapper.toDomain),
     };
   }
 
@@ -111,26 +98,89 @@ export class MoviesRepository {
       include: this.include,
     });
 
-    if (!movie) {
-      throw new NotFoundException('Filme não encontrado');
-    }
-
+    if (!movie) throw new NotFoundException('Filme não encontrado');
     return MovieMapper.toDomain(movie);
   }
 
   async delete(id: number): Promise<void> {
-    await this.prisma.movieGenre.deleteMany({
-      where: { movieId: id },
-    });
-
-    await this.prisma.movie.delete({
-      where: { id },
-    });
+    await this.prisma.$transaction([
+      this.prisma.movieGenre.deleteMany({ where: { movieId: id } }),
+      this.prisma.movie.delete({ where: { id } }),
+    ]);
   }
 
-  private buildGenreConnections(genreIds: number[]) {
-    return genreIds.map((genreId) => ({
-      genre: { connect: { id: genreId } },
+  private formatRevenue(revenue?: number): Prisma.Decimal | undefined {
+    return revenue !== undefined ? new Prisma.Decimal(revenue) : undefined;
+  }
+
+  private buildGenresCreate(genreIds: number[] = []) {
+    return genreIds.length
+      ? { create: this.mapGenreConnections(genreIds) }
+      : undefined;
+  }
+
+  private buildGenresUpdate(genreIds?: number[]) {
+    if (!Array.isArray(genreIds)) return undefined;
+    return {
+      deleteMany: {},
+      create: this.mapGenreConnections(genreIds),
+    };
+  }
+
+  private mapGenreConnections(genreIds: number[]) {
+    return genreIds.map((id) => ({
+      genre: { connect: { id } },
     }));
+  }
+
+  private buildWhere(
+    query: MovieQuery,
+    userId: number,
+  ): Prisma.MovieWhereInput {
+    const {
+      search,
+      minDuration,
+      maxDuration,
+      startDate,
+      endDate,
+      genre,
+      maxClassification,
+    } = query;
+
+    const where: Prisma.MovieWhereInput = { userId };
+
+    if (search) {
+      where.title = { contains: search, mode: 'insensitive' };
+    }
+
+    if (minDuration !== undefined || maxDuration !== undefined) {
+      where.duration = {
+        ...(minDuration && { gte: minDuration }),
+        ...(maxDuration && { lte: maxDuration }),
+      };
+    }
+
+    if (startDate || endDate) {
+      where.releaseDate = {
+        ...(startDate && { gte: new Date(startDate) }),
+        ...(endDate && { lte: new Date(endDate) }),
+      };
+    }
+
+    if (genre) {
+      where.genres = {
+        some: {
+          genre: {
+            name: { equals: genre, mode: 'insensitive' },
+          },
+        },
+      };
+    }
+
+    if (maxClassification !== undefined) {
+      where.classification = { lte: maxClassification };
+    }
+
+    return where;
   }
 }

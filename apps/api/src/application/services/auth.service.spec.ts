@@ -17,6 +17,8 @@ describe('AuthService', () => {
     email: 'test@test.com',
     password: 'hashedPassword',
     name: 'Test',
+    createdAt: new Date(),
+    updatedAt: new Date(),
   });
 
   const mockUsersRepo = {

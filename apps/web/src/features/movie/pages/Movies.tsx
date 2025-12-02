@@ -1,12 +1,14 @@
 import { memo, useCallback, useMemo, type ChangeEvent } from "react";
-import { Plus, Search, SlidersHorizontal } from "lucide-react";
+import { Plus, Search } from "lucide-react";
 import { useDebounce } from "use-debounce";
 
+import { useShallow } from "zustand/react/shallow";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { MovieCard } from "../components/MovieCard";
 import { Pagination } from "../components/Pagination";
 import { useMoviesFilters, useFetchMovies } from "../hooks/useMovies";
+import { MoviesFiltersModal } from "../components/MoviesFiltersModal";
 
 const PAGE_SIZE = 10;
 import backgroundImage from "@/assets/background-image.png";
@@ -16,9 +18,23 @@ export function MoviesPage() {
   const page = useMoviesFilters((state) => state.page);
   const setSearch = useMoviesFilters((state) => state.setSearch);
   const setPage = useMoviesFilters((state) => state.setPage);
+  const filters = useMoviesFilters(
+    useShallow((state) => ({
+      minDuration: state.minDuration,
+      maxDuration: state.maxDuration,
+      startDate: state.startDate,
+      endDate: state.endDate,
+      genre: state.genre,
+      maxClassification: state.maxClassification,
+    }))
+  );
 
   const [debouncedSearch] = useDebounce(search, 400);
-  const { data, isLoading, error } = useFetchMovies(page, debouncedSearch);
+  const { data, isLoading, error } = useFetchMovies(
+    page,
+    debouncedSearch,
+    filters
+  );
 
   const movies = useMemo(() => data?.items ?? [], [data]);
   const totalItems = data?.pagination.total ?? 0;
@@ -46,34 +62,28 @@ export function MoviesPage() {
   return (
     <main className="flex-1 bg-background text-foreground">
       <div className="relative isolate">
-        <div className="pointer-events-none absolute inset-0 overflow-hidden opacity-40">
-          <img
-            src={backgroundImage}
-            alt="sala de cinema"
-            className="h-full w-full object-cover"
-          />
-        </div>
-        <div className="absolute inset-0 bg-gradient-to-b from-background via-background/80 to-background" />
+        <div
+          className="pointer-events-none absolute left-1/2 top-0 h-[564px] w-screen -translate-x-1/2 
+             bg-repeat-x bg-top "
+          style={{
+            backgroundImage: `url(${backgroundImage})`,
+            backgroundSize: "auto",
+          }}
+        />
         <div className="relative mx-auto w-full max-w-[1380px] px-4 py-10 sm:px-8 lg:px-12">
           <div className="flex flex-col gap-6">
             <div className="flex flex-wrap gap-4 justify-end ">
-              <div className="relative flex-1 min-w-[260px]">
+              <div className="relative flex-1 min-w-[260px] text-foreground">
                 <Search className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                 <Input
                   value={search}
                   onChange={handleSearchChange}
                   placeholder="Pesquise por filmes"
-                  className="h-12 border-border bg-muted/20 pl-12 max-w-122 text-foreground placeholder:text-muted-foreground focus:border-ring"
+                  className="h-12 border-border bg-muted pl-12 max-w-122 text-foreground placeholder:text-muted-foreground focus:border-ring"
                 />
               </div>
               <div className="flex w-full gap-3 sm:w-auto">
-                <Button
-                  variant="outline"
-                  className="flex flex-1 items-center justify-center gap-2 rounded-[4px] border-border bg-background px-5 py-2 text-sm font-semibold text-foreground hover:border-primary/60 hover:text-primary sm:flex-none"
-                >
-                  <SlidersHorizontal className="h-4 w-4" />
-                  Filtros
-                </Button>
+                <MoviesFiltersModal />
                 <Button
                   className="flex flex-1 items-center justify-center gap-2 rounded-[4px] bg-primary px-5 py-2 text-sm font-semibold text-primary-foreground transition hover:bg-primary/90 sm:flex-none"
                   onClick={handleAddMovie}

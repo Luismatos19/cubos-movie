@@ -80,7 +80,11 @@ describe('MoviesRepository', () => {
   it('should create movie', async () => {
     mockPrisma.movie.create.mockResolvedValue(mockPrismaMovie);
 
-    const result = await repository.create(1, { title: 'New' });
+    const result = await repository.create(1, {
+      title: 'New',
+      releaseDate: new Date(),
+      imageUrl: 'img.jpg',
+    });
 
     expect(prisma.movie.create).toHaveBeenCalled();
     expect(result.id).toBe(1);
