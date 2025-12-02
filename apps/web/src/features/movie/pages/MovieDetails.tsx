@@ -1,11 +1,10 @@
-import { memo, useMemo } from "react";
+import { memo, useMemo, useState } from "react";
 import { useParams } from "react-router-dom";
-import { useQuery } from "@tanstack/react-query";
 
-import { api } from "@/lib/api";
-import type { Movie } from "../types/types";
 import { Button } from "@/components/ui/button";
 import { RatingBadge } from "../components/RatingBadge";
+import { DeleteMovieDialog } from "../components/DeleteMovieDialog";
+import { useCreateMovie, useDeleteMovie } from "../hooks/useMovies";
 import {
   formatDate,
   formatDuration,
@@ -16,15 +15,20 @@ import { StatChip } from "../components/StatChip";
 
 export function MovieDetailsPage() {
   const { movieId } = useParams<{ movieId: string }>();
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
 
-  const { data, isLoading, error } = useQuery<Movie, Error>({
-    queryKey: ["movie", movieId],
-    enabled: Boolean(movieId),
-    queryFn: async () => {
-      const response = await api.get<Movie>(`/movies/${movieId}`);
-      return response.data;
-    },
-  });
+  const { data, isLoading, error } = useCreateMovie(movieId);
+  const { mutateAsync: deleteMovie, isPending: isDeleting } = useDeleteMovie();
+
+  const handleDeleteClick = () => {
+    setIsDeleteDialogOpen(true);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!movieId) return;
+
+    await deleteMovie(Number(movieId));
+  };
 
   const releaseDate = data?.releaseDate;
   const duration = data?.duration ?? 0;
@@ -133,7 +137,10 @@ export function MovieDetailsPage() {
             >
               Editar
             </Button>
-            <Button className="bg-primary text-primary-foreground hover:bg-primary/90">
+            <Button
+              onClick={handleDeleteClick}
+              className="bg-primary text-primary-foreground hover:bg-primary/90"
+            >
               Deletar
             </Button>
           </div>
@@ -153,6 +160,7 @@ export function MovieDetailsPage() {
               <div className="flex gap-4">
                 <Button
                   variant="secondary"
+                  onClick={handleDeleteClick}
                   className="w-[35%] bg-secondary text-secondary-foreground hover:bg-secondary/80 "
                 >
                   Deletar
@@ -265,6 +273,13 @@ export function MovieDetailsPage() {
           </div>
         </div>
       </div>
+
+      <DeleteMovieDialog
+        open={isDeleteDialogOpen}
+        onOpenChange={setIsDeleteDialogOpen}
+        onConfirm={handleConfirmDelete}
+        isDeleting={isDeleting}
+      />
     </div>
   );
 }

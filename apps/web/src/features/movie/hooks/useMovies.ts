@@ -1,7 +1,10 @@
 import { create } from "zustand";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useNavigate } from "react-router-dom";
+import { toast } from "sonner";
+
 import { api } from "@/lib/api";
-import type { PaginatedMovies } from "../types/types";
+import type { PaginatedMovies, Movie } from "../types/types";
 
 interface MoviesFilters {
   minDuration?: number;
@@ -64,5 +67,38 @@ export function useFetchMovies(
       return response.data;
     },
     placeholderData: (previous) => previous,
+  });
+}
+
+export function useCreateMovie(movieId?: string) {
+  return useQuery<Movie, Error>({
+    queryKey: ["movie", movieId],
+    enabled: Boolean(movieId),
+    queryFn: async () => {
+      const response = await api.get<Movie>(`/movies/${movieId}`);
+      return response.data;
+    },
+  });
+}
+
+export function useDeleteMovie() {
+  const queryClient = useQueryClient();
+  const navigate = useNavigate();
+
+  return useMutation({
+    mutationFn: async (movieId: number) => {
+      await api.delete(`/movies/${movieId}`);
+    },
+    onSuccess: () => {
+      toast.success("Filme removido com sucesso!");
+      queryClient.invalidateQueries({ queryKey: ["movies"] });
+      navigate("/");
+    },
+    onError: (error: any) => {
+      console.error("Erro ao deletar filme:", error);
+      const errorMessage =
+        error.response?.data?.message || "Erro ao remover filme.";
+      toast.error(errorMessage);
+    },
   });
 }
