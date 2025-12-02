@@ -2,7 +2,8 @@ import { useEffect } from "react";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { LoginPage } from "./features/auth/pages/Login";
 import { RegisterPage } from "./features/auth/pages/Register";
-import { MoviesPage } from "./pages/Movies";
+import { MoviesPage } from "./features/movie/pages/Movies";
+import { MovieDetailsPage } from "./features/movie/pages/MovieDetails";
 import { useThemeStore } from "./stores/useThemeStore";
 import { Layout } from "./layout";
 import { PublicRoute } from "./routes/PublicRoutes";
@@ -40,6 +41,14 @@ function App() {
             element={
               <PrivateRoute>
                 <MoviesPage />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/filmes/:movieId"
+            element={
+              <PrivateRoute>
+                <MovieDetailsPage />
               </PrivateRoute>
             }
           />

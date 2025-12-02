@@ -28,11 +28,31 @@ model Movie {
   description String?
   releaseDate DateTime
   imageUrl    String   @default("")
+  classification Int    @default(0)
+  rating         Int    @default(0)
+  trailerUrl     String @default("")
+  duration       Int    @default(0)
+  revenue        Decimal @default(0) @db.Decimal(12, 2)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  
   userId Int
   user   User @relation(fields: [userId], references: [id])
+  genres MovieGenre[]
+}
+
+model Genre {
+  id     Int           @id @default(autoincrement())
+  name   String        @unique
+  movies MovieGenre[]
+}
+
+model MovieGenre {
+  movie   Movie @relation(fields: [movieId], references: [id])
+  movieId Int
+  genre   Genre @relation(fields: [genreId], references: [id])
+  genreId Int
+
+  @@id([movieId, genreId])
 }
 

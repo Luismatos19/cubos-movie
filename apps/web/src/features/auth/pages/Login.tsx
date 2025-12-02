@@ -6,7 +6,6 @@ import { Button } from "../../../components/ui/button";
 import { Input } from "../../../components/ui/input";
 import { Label } from "../../../components/ui/label";
 import { useLogin } from "../hooks/useLogin";
-import { useRedirectIfAuthenticated } from "../hooks/useRedirectIfAuthenticated";
 import { AuthLayout } from "../components/AuthLayout";
 
 const loginSchema = z.object({
@@ -18,7 +17,6 @@ type LoginSchema = z.infer<typeof loginSchema>;
 
 export function LoginPage() {
   const { mutate: login, isPending, isError } = useLogin();
-  useRedirectIfAuthenticated();
 
   const {
     register,

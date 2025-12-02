@@ -1,34 +1,33 @@
 import {
-  Controller,
-  Post,
+  BadRequestException,
   Body,
-  UseGuards,
+  Controller,
+  Delete,
+  Get,
   HttpCode,
   HttpStatus,
-  UploadedFile,
-  UseInterceptors,
-  BadRequestException,
-  Get,
   Param,
   ParseIntPipe,
   Patch,
-  Delete,
+  Post,
+  Query,
+  UploadedFile,
+  UseGuards,
+  UseInterceptors,
 } from '@nestjs/common';
-import {
-  ApiTags,
-  ApiOperation,
-  ApiBearerAuth,
-  ApiBody,
-  ApiParam,
-} from '@nestjs/swagger';
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { FileInterceptor } from '@nestjs/platform-express';
-
 import { memoryStorage } from 'multer';
+
 import { MoviesService } from './movies.service';
-import { CreateMovieDto } from './dto/create-movie.dto';
 import { UpdateMovieDto } from './dto/update-movie.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
+import { GetMoviesDto } from './dto/get-movies.dto';
+import { CreateMovieDto } from './dto/create-movie.dto';
+import { DocMovies } from './movies.doc';
+
+type AuthUser = { id: number };
 
 @ApiTags('movies')
 @ApiBearerAuth('JWT-auth')
@@ -37,28 +36,36 @@ import { CurrentUser } from '../auth/decorators/current-user.decorator';
 export class MoviesController {
   constructor(private readonly moviesService: MoviesService) {}
 
+  @Post()
+  @HttpCode(HttpStatus.CREATED)
   @UseInterceptors(
     FileInterceptor('file', {
       storage: memoryStorage(),
       limits: { fileSize: 5 * 1024 * 1024 },
-      fileFilter: (req, file, cb) => {
+      fileFilter: (
+        _req,
+        file: Express.Multer.File,
+        callback: (error: Error | null, acceptFile: boolean) => void,
+      ) => {
         if (!file.mimetype.startsWith('image/')) {
-          return cb(
-            new BadRequestException('Apenas imagens são permitidas') as any,
+          return callback(
+            new BadRequestException('Apenas imagens são permitidas'),
             false,
           );
         }
-        cb(null, true);
+        callback(null, true);
       },
     }),
   )
-  @Post()
+  @DocMovies.Create()
   async create(
-    @CurrentUser() user: { id: number },
+    @CurrentUser() user: AuthUser,
     @UploadedFile() file: Express.Multer.File,
-    @Body() body: { title: string; description?: string; releaseDate: Date },
+    @Body() body: CreateMovieDto,
   ) {
-    if (!file) throw new BadRequestException('Arquivo obrigatório');
+    if (!file) {
+      throw new BadRequestException('Arquivo obrigatório');
+    }
 
     const { fileUrl } = await this.moviesService.uploadBufferToR2(
       file.originalname,
@@ -66,60 +73,32 @@ export class MoviesController {
       file.mimetype,
     );
 
-    const movie = await this.moviesService.create(user.id, {
-      title: body.title,
-      description: body.description,
+    return this.moviesService.create(user.id, {
+      ...body,
       imageUrl: fileUrl,
-      releaseDate: body.releaseDate,
     });
-
-    return movie;
   }
 
   @Get()
-  @ApiOperation({
-    summary: 'Listar todos os filmes',
-    description: 'Retorna todos os filmes do usuário autenticado',
-  })
-  @UseGuards(JwtAuthGuard)
-  findAll(@CurrentUser() user: { id: number }) {
-    return this.moviesService.findAll(user.id);
+  @DocMovies.List()
+  findAll(@CurrentUser() user: AuthUser, @Query() query: GetMoviesDto) {
+    return this.moviesService.findAll(user.id, query);
   }
 
   @Get(':id')
-  @ApiOperation({
-    summary: 'Buscar filme por ID',
-    description: 'Retorna um filme específico do usuário autenticado',
-  })
-  @ApiParam({
-    name: 'id',
-    description: 'ID do filme',
-    type: Number,
-    example: 1,
-  })
-  @UseGuards(JwtAuthGuard)
+  @DocMovies.GetOne()
   findOne(
     @Param('id', ParseIntPipe) id: number,
-    @CurrentUser() user: { id: number },
+    @CurrentUser() user: AuthUser,
   ) {
     return this.moviesService.findOne(id, user.id);
   }
 
   @Patch(':id')
-  @ApiOperation({
-    summary: 'Atualizar filme',
-    description: 'Atualiza um filme específico do usuário autenticado',
-  })
-  @ApiParam({
-    name: 'id',
-    description: 'ID do filme',
-    type: Number,
-    example: 1,
-  })
-  @UseGuards(JwtAuthGuard)
+  @DocMovies.Update()
   update(
     @Param('id', ParseIntPipe) id: number,
-    @CurrentUser() user: { id: number },
+    @CurrentUser() user: AuthUser,
     @Body() updateMovieDto: UpdateMovieDto,
   ) {
     return this.moviesService.update(id, user.id, updateMovieDto);
@@ -127,21 +106,8 @@ export class MoviesController {
 
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
-  @ApiOperation({
-    summary: 'Excluir filme',
-    description: 'Exclui um filme específico do usuário autenticado',
-  })
-  @ApiParam({
-    name: 'id',
-    description: 'ID do filme',
-    type: Number,
-    example: 1,
-  })
-  @UseGuards(JwtAuthGuard)
-  remove(
-    @Param('id', ParseIntPipe) id: number,
-    @CurrentUser() user: { id: number },
-  ) {
+  @DocMovies.Remove()
+  remove(@Param('id', ParseIntPipe) id: number, @CurrentUser() user: AuthUser) {
     return this.moviesService.remove(id, user.id);
   }
 }

@@ -4,14 +4,14 @@ type AuthLayoutProps = {
   children: ReactNode;
 };
 
-export function AuthLayout({ children }: AuthLayoutProps) {
-  const heroImage = "/Background-image.png";
+import backgroundImage from "@/assets/background-image.png";
 
+export function AuthLayout({ children }: AuthLayoutProps) {
   return (
     <main className="relative flex flex-1 items-center justify-center">
       <div className="pointer-events-none absolute left-1/2 top-0 h-[564px] w-[1440px] -translate-x-1/2">
         <img
-          src={heroImage}
+          src={backgroundImage}
           alt="Cinema background"
           className="absolute inset-0 h-full w-full object-cover opacity-46"
         />
