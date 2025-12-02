@@ -8,6 +8,7 @@ import { useThemeStore } from "./stores/useThemeStore";
 import { Layout } from "./layout";
 import { PublicRoute } from "./routes/PublicRoutes";
 import { PrivateRoute } from "./routes/PrivateRoute";
+import { Toaster } from "./components/ui/sonner";
 
 function App() {
   const initializeTheme = useThemeStore((state) => state.initializeTheme);
@@ -54,6 +55,7 @@ function App() {
           />
         </Route>
       </Routes>
+      <Toaster />
     </BrowserRouter>
   );
 }

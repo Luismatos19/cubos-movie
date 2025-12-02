@@ -159,6 +159,29 @@ export class CreateMovieDto {
   revenue?: number = 0;
 
   @ApiPropertyOptional({
+    description: 'Orçamento em dólares',
+    example: 100000000,
+    type: Number,
+  })
+  @Transform(({ value }: TransformFnParams) => toNumber(value as unknown))
+  @IsOptional()
+  @IsNumber(
+    { maxDecimalPlaces: 2 },
+    { message: 'Orçamento deve ser um número com até duas casas decimais' },
+  )
+  @Min(0, { message: 'Orçamento deve ser no mínimo 0' })
+  budget?: number = 0;
+
+  @ApiPropertyOptional({
+    description: 'Idioma original do filme',
+    example: 'en',
+    type: String,
+  })
+  @IsOptional()
+  @IsString({ message: 'Idioma deve ser uma string' })
+  language?: string = '';
+
+  @ApiPropertyOptional({
     description: 'IDs dos gêneros associados',
     type: [Number],
     example: [1, 2, 5],

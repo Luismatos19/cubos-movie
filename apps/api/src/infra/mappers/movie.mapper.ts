@@ -27,6 +27,8 @@ export class MovieMapper {
       trailerUrl: movie.trailerUrl,
       duration: movie.duration ?? 0,
       revenue: Number(movie.revenue ?? 0),
+      budget: Number(movie.budget ?? 0),
+      language: movie.language ?? '',
       createdAt: movie.createdAt,
       updatedAt: movie.updatedAt,
       userId: movie.userId,

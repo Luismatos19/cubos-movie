@@ -9,6 +9,8 @@ export type Movie = {
   trailerUrl?: string | null;
   duration: number;
   revenue: number;
+  budget: number;
+  language: string;
   genres: string[];
   createdAt: string;
   updatedAt: string;

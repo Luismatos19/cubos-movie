@@ -4,14 +4,15 @@ import { useQuery } from "@tanstack/react-query";
 
 import { api } from "@/lib/api";
 import type { Movie } from "../types/types";
-
-type Stat = {
-  label: string;
-  value: string;
-};
-
-const detailBackground =
-  "https://www.figma.com/api/mcp/asset/d7d690cf-6933-41b6-8601-7e4a41f3e216";
+import { Button } from "@/components/ui/button";
+import { RatingBadge } from "../components/RatingBadge";
+import {
+  formatDate,
+  formatDuration,
+  formatCurrency,
+  normalizeTrailerUrl,
+} from "../utils/helpers";
+import { StatChip } from "../components/StatChip";
 
 export function MovieDetailsPage() {
   const { movieId } = useParams<{ movieId: string }>();
@@ -29,6 +30,8 @@ export function MovieDetailsPage() {
   const duration = data?.duration ?? 0;
   const classification = data?.classification ?? 0;
   const revenue = data?.revenue ?? 0;
+  const budget = data?.budget ?? 0;
+  const language = data?.language || "—";
   const trailer = data?.trailerUrl ?? null;
   const rating = data?.rating ?? 0;
   const description = data?.description ?? "";
@@ -40,13 +43,29 @@ export function MovieDetailsPage() {
   );
   const durationLabel = useMemo(() => formatDuration(duration), [duration]);
   const classificationLabel = useMemo(
-    () => (classification > 0 ? `${classification} anos` : "Livre"),
+    () => (classification > 0 ? `${classification} ANOS` : "LIVRE"),
     [classification]
   );
   const revenueLabel = useMemo(
     () => (revenue ? formatCurrency(revenue) : "—"),
     [revenue]
   );
+  const budgetLabel = useMemo(
+    () => (budget ? formatCurrency(budget) : "—"),
+    [budget]
+  );
+  const profit = revenue - budget;
+  const profitLabel = useMemo(
+    () => (revenue && budget ? formatCurrency(profit) : "—"),
+    [profit, revenue, budget]
+  );
+  const statusLabel = useMemo(() => {
+    if (!releaseDate) return "Desconhecido";
+    const release = new Date(releaseDate);
+    const now = new Date();
+    return release > now ? "Em breve" : "Lançado";
+  }, [releaseDate]);
+
   const trailerUrl = useMemo(() => normalizeTrailerUrl(trailer), [trailer]);
   const ratingValue = useMemo(
     () => Math.max(0, Math.min(100, Math.round(rating))),
@@ -60,22 +79,7 @@ export function MovieDetailsPage() {
     [description]
   );
 
-  const infoPrimary = useMemo<Stat[]>(
-    () => [
-      { label: "Lançamento", value: releaseLabel },
-      { label: "Duração", value: durationLabel },
-      { label: "Classificação", value: classificationLabel },
-    ],
-    [releaseLabel, durationLabel, classificationLabel]
-  );
-
-  const infoSecondary = useMemo<Stat[]>(
-    () => [{ label: "Receita", value: revenueLabel }],
-    [revenueLabel]
-  );
-
-  const heroImage = useMemo(() => imageUrl || detailBackground, [imageUrl]);
-  const posterImage = heroImage;
+  const posterImage = imageUrl;
 
   if (!movieId) {
     return (
@@ -100,216 +104,190 @@ export function MovieDetailsPage() {
   }
 
   return (
-    <section className="flex-1 bg-background text-foreground">
-      <div className="relative isolate">
-        <div className="pointer-events-none absolute inset-0 overflow-hidden opacity-30">
-          <img src={heroImage} alt="" className="h-full w-full object-cover" />
+    <div className="min-h-screen bg-background text-foreground">
+      <div className="relative h-[500px] w-full overflow-hidden lg:h-[600px]">
+        <div className="absolute inset-0">
+          <img
+            src={posterImage}
+            alt={`Poster de ${data.title}`}
+            className="h-full w-full object-cover opacity-50"
+          />
         </div>
-        <div className="absolute inset-0 bg-gradient-to-b from-background via-background/75 to-background" />
-        <div className="relative mx-auto w-full max-w-[1380px] px-4 py-10 sm:px-8 lg:px-12">
-          <div className="rounded-[8px] border border-border bg-card/90 shadow-[0_20px_70px_rgba(0,0,0,0.65)]">
-            <div className="relative overflow-hidden rounded-t-[8px]">
+        <div className="absolute inset-0 bg-linear-to-r from-background via-background/80 to-transparent" />
+        <div className="absolute inset-0 bg-linear-to-t from-background via-transparent to-transparent" />
+      </div>
+
+      <div className="relative mx-auto -mt-[380px] flex w-full max-w-[1380px] flex-col px-4 pb-20 sm:px-8 lg:-mt-[480px] lg:px-12">
+        <div className="mb-8 hidden items-center justify-between lg:flex">
+          <div>
+            <h1 className="text-4xl font-bold text-foreground">{data.title}</h1>
+            <p className="text-lg text-muted-foreground">
+              Título original: {data.title}
+            </p>
+          </div>
+          {/* desktop */}
+          <div className="flex gap-4">
+            <Button
+              variant="secondary"
+              className="bg-secondary text-secondary-foreground hover:bg-secondary/80"
+            >
+              Editar
+            </Button>
+            <Button className="bg-primary text-primary-foreground hover:bg-primary/90">
+              Deletar
+            </Button>
+          </div>
+        </div>
+
+        <div className="flex flex-col gap-8 lg:flex-row">
+          <div className="shrink-0">
+            <div className="relative mx-auto aspect-2/3 w-full max-w-[300px] overflow-hidden rounded-[4px] shadow-[0px_4px_20px_rgba(0,0,0,0.5)] lg:w-[374px]">
               <img
-                src={heroImage}
-                alt={data.title}
-                className="h-[360px] w-full object-cover opacity-60"
+                src={posterImage}
+                alt={`Poster de ${data.title}`}
+                className="h-full w-full object-cover"
               />
-              <div className="absolute inset-0 bg-gradient-to-r from-background via-background/80 to-transparent" />
             </div>
-            <div className="flex flex-col gap-8 p-6 sm:p-10">
-              <header className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
-                <div>
-                  <h1 className="text-3xl font-semibold">{data.title}</h1>
-                  <p className="text-base text-muted-foreground">
-                    {`Lançado em ${releaseLabel}`}
-                  </p>
-                </div>
-                <div className="flex gap-3">
-                  <button className="rounded-[2px] border border-primary/70 px-6 py-2 text-sm font-semibold text-primary transition hover:bg-primary/10">
-                    Deletar
-                  </button>
-                  <button className="rounded-[2px] bg-primary px-6 py-2 text-sm font-semibold text-primary-foreground transition hover:bg-primary/90">
-                    Editar
-                  </button>
-                </div>
-              </header>
+            {/* mobile */}
+            <div className="mt-6 flex flex-col gap-6 lg:hidden">
+              <div className="flex gap-4">
+                <Button
+                  variant="secondary"
+                  className="w-[35%] bg-secondary text-secondary-foreground hover:bg-secondary/80 "
+                >
+                  Deletar
+                </Button>
+                <Button className="flex-1 bg-primary text-primary-foreground hover:bg-primary/90">
+                  Editar
+                </Button>
+              </div>
 
-              <div className="flex flex-col gap-8 lg:flex-row">
-                <div className="flex flex-col gap-6 lg:w-[340px]">
-                  <div className="overflow-hidden rounded-[6px] border border-border bg-muted/40 shadow-[0_6px_20px_rgba(0,0,0,0.45)]">
-                    <img
-                      src={posterImage}
-                      alt={`Poster do filme ${data.title}`}
-                      className="w-full"
-                    />
-                  </div>
-                  <p className="text-sm italic text-foreground">
-                    {classificationLabel}
-                  </p>
-                </div>
-
-                <div className="flex-1 space-y-6">
-                  <div className="flex flex-wrap gap-4">
-                    <InfoBlock
-                      title="Classificação"
-                      value={classificationLabel}
-                    />
-                    <InfoBlock
-                      title="Duração"
-                      value={
-                        durationLabel === "0m" ? "Indisponível" : durationLabel
-                      }
-                    />
-                    <RatingCircle value={ratingValue} size={110} />
-                  </div>
-
-                  <section className="space-y-3">
-                    <h2 className="text-sm font-bold uppercase tracking-[0.3em] text-muted-foreground">
-                      Sinopse
-                    </h2>
-                    <p className="text-sm leading-relaxed text-foreground/80">
-                      {synopsis}
-                    </p>
-                  </section>
-
-                  <section className="space-y-3">
-                    <h3 className="text-sm font-bold uppercase tracking-[0.3em] text-muted-foreground">
-                      Gêneros
-                    </h3>
-                    <div className="flex flex-wrap gap-3">
-                      {data.genres.length ? (
-                        data.genres.map((genre) => (
-                          <span
-                            key={genre}
-                            className="rounded-[2px] bg-primary/15 px-3 py-1 text-xs font-semibold uppercase text-primary"
-                          >
-                            {genre}
-                          </span>
-                        ))
-                      ) : (
-                        <span className="text-sm text-muted-foreground">
-                          Nenhum gênero cadastrado.
-                        </span>
-                      )}
-                    </div>
-                  </section>
-
-                  <div className="grid gap-4 lg:grid-cols-2">
-                    {infoPrimary.map((stat) => (
-                      <StatCard key={stat.label} stat={stat} />
-                    ))}
-                  </div>
-                  <div className="grid gap-4 sm:grid-cols-3">
-                    {infoSecondary.map((stat) => (
-                      <StatCard key={stat.label} stat={stat} />
-                    ))}
-                  </div>
-                </div>
+              <div className="text-center">
+                <h1 className="text-3xl font-bold text-foreground">
+                  {data.title}
+                </h1>
+                <p className="text-base text-muted-foreground">
+                  Título original: {data.title}
+                </p>
               </div>
             </div>
           </div>
 
-          <section className="mt-8 rounded-[8px] border border-border bg-card/90 p-6 shadow-[0_20px_70px_rgba(0,0,0,0.65)] sm:p-10">
-            <h2 className="text-2xl font-semibold">Trailer</h2>
-            <div className="mt-4 aspect-video overflow-hidden rounded-[8px] border border-border bg-muted/30">
-              {trailerUrl ? (
-                <iframe
-                  title={`Trailer de ${data.title}`}
-                  src={`${trailerUrl}${trailerUrl.includes("?") ? "&" : "?"}rel=0`}
-                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                  allowFullScreen
-                  className="h-full w-full"
-                />
-              ) : (
-                <div className="flex h-full items-center justify-center text-sm text-muted-foreground">
-                  Trailer indisponível para este filme.
+          <div className="flex flex-1 flex-col gap-6">
+            <div className="flex flex-wrap items-start justify-between gap-4">
+              <p className="text-lg italic text-foreground/90 opacity-90">
+                {description
+                  ? "Aventure-se nesta história."
+                  : "Todo herói tem um começo."}
+              </p>
+
+              <div className="flex items-center gap-6">
+                <div className="flex flex-col items-center rounded-[4px] bg-card/75 p-4 backdrop-blur-sm border border-border/10">
+                  <span className="text-xs font-bold uppercase text-muted-foreground">
+                    Classificação Indicativa
+                  </span>
+                  <span className="text-lg font-semibold text-foreground">
+                    {classificationLabel}
+                  </span>
                 </div>
-              )}
+                <RatingBadge value={ratingValue} />
+              </div>
             </div>
-          </section>
+
+            <div className="flex flex-col gap-4 lg:flex-row">
+              <div className="flex flex-1 flex-col gap-4">
+                <div className="rounded-[4px] bg-card/60 p-4 backdrop-blur-sm border border-border/10">
+                  <h3 className="mb-2 text-xs font-bold uppercase text-muted-foreground">
+                    Sinopse
+                  </h3>
+                  <p className="text-sm leading-relaxed text-foreground">
+                    {synopsis}
+                  </p>
+                </div>
+
+                <div className="rounded-[4px] bg-card/60 p-4 border border-border/10">
+                  <h3 className="mb-3 text-sm font-bold text-muted-foreground">
+                    Gêneros
+                  </h3>
+                  <div className="flex flex-wrap gap-2">
+                    {data.genres.length ? (
+                      data.genres.map((genre) => (
+                        <span
+                          key={genre}
+                          className="rounded-[4px] bg-primary/18 w-[138px] h-[32px] flex items-center justify-center  text-xs font-semibold uppercase text-foreground backdrop-blur-sm"
+                        >
+                          {genre}
+                        </span>
+                      ))
+                    ) : (
+                      <span className="text-sm text-muted-foreground">
+                        Nenhum gênero cadastrado.
+                      </span>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex w-full flex-col gap-4 lg:w-[200px]">
+                <StatChip label="Lançamento" value={releaseLabel} />
+                <StatChip label="Duração" value={durationLabel} />
+                <StatChip label="Situação" value={statusLabel} />
+                <StatChip label="Idioma" value={language} />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">
+              <StatChip label="Orçamento" value={budgetLabel} size="sm" />
+              <StatChip label="Receita" value={revenueLabel} size="sm" />
+              <StatChip label="Lucro" value={profitLabel} size="sm" />
+            </div>
+
+            <div className="mt-4">
+              <h2 className="mb-4 text-2xl font-bold text-foreground">
+                Trailer
+              </h2>
+              <div className="aspect-video w-full overflow-hidden rounded-[4px] bg-muted/40">
+                {trailerUrl ? (
+                  <iframe
+                    title={`Trailer de ${data.title}`}
+                    src={`${trailerUrl}${trailerUrl.includes("?") ? "&" : "?"}rel=0`}
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    allowFullScreen
+                    className="h-full w-full"
+                  />
+                ) : (
+                  <div className="flex h-full items-center justify-center text-muted-foreground">
+                    Trailer indisponível
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
         </div>
       </div>
-    </section>
+    </div>
   );
 }
 
-const InfoBlock = memo(function InfoBlock({
-  title,
-  value,
-}: {
-  title: string;
-  value: string;
-}) {
-  return (
-    <div className="rounded-[4px] border border-border bg-muted/30 px-4 py-3">
-      <p className="text-xs font-bold uppercase tracking-[0.3em] text-muted-foreground">
-        {title}
-      </p>
-      <p className="text-lg font-semibold text-foreground">{value}</p>
-    </div>
-  );
-});
-
-const StatCard = memo(function StatCard({ stat }: { stat: Stat }) {
-  return (
-    <div className="rounded-[4px] border border-border bg-muted/30 px-4 py-3">
-      <p className="text-xs font-bold uppercase tracking-[0.3em] text-muted-foreground">
-        {stat.label}
-      </p>
-      <p className="text-sm font-semibold text-foreground">{stat.value}</p>
-    </div>
-  );
-});
-
-const RatingCircle = memo(function RatingCircle({
-  value,
-  size = 120,
-}: {
-  value: number;
-  size?: number;
-}) {
-  const angle = Math.min(360, Math.max(0, Math.round((value / 100) * 360)));
-  const innerSize = size - 20;
-  return (
-    <div
-      className="flex items-center justify-center rounded-full border-4 border-muted/60"
-      style={{
-        background: `conic-gradient(var(--color-primary) ${angle}deg, rgba(255,255,255,0.12) ${angle}deg 360deg)`,
-        width: size,
-        height: size,
-      }}
-    >
-      <div
-        className="flex flex-col items-center justify-center rounded-full bg-background/80 text-center"
-        style={{ width: innerSize, height: innerSize }}
-      >
-        <span className="text-2xl font-semibold text-primary">{value}</span>
-        <span className="text-sm font-semibold text-foreground">%</span>
-      </div>
-    </div>
-  );
-});
-
 const DetailsSkeleton = memo(function DetailsSkeleton() {
   return (
-    <section className="flex-1 bg-background text-foreground">
-      <div className="relative isolate">
-        <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-background via-background/70 to-background" />
-        <div className="relative mx-auto w-full max-w-[1380px] px-4 py-10 sm:px-8 lg:px-12">
-          <div className="animate-pulse rounded-[8px] border border-border bg-card/90 p-8">
-            <div className="h-6 w-1/3 rounded bg-muted/30" />
-            <div className="mt-6 grid gap-6 lg:grid-cols-2">
-              <div className="h-[320px] rounded bg-muted/20" />
-              <div className="space-y-4">
-                <div className="h-5 w-2/3 rounded bg-muted/30" />
-                <div className="h-4 w-full rounded bg-muted/20" />
-                <div className="h-4 w-5/6 rounded bg-muted/20" />
-              </div>
+    <div className="min-h-screen bg-background px-4 py-10">
+      <div className="mx-auto max-w-[1380px] animate-pulse">
+        <div className="h-[400px] w-full rounded-lg bg-muted/20" />
+        <div className="mt-8 grid gap-8 lg:grid-cols-[300px_1fr]">
+          <div className="h-[450px] rounded-lg bg-muted/20" />
+          <div className="space-y-4">
+            <div className="h-10 w-1/2 rounded bg-muted/20" />
+            <div className="h-40 rounded bg-muted/20" />
+            <div className="grid grid-cols-3 gap-4">
+              <div className="h-20 rounded bg-muted/20" />
+              <div className="h-20 rounded bg-muted/20" />
+              <div className="h-20 rounded bg-muted/20" />
             </div>
           </div>
         </div>
       </div>
-    </section>
+    </div>
   );
 });
 
@@ -329,41 +307,3 @@ const StateMessage = memo(function StateMessage({
     </section>
   );
 });
-
-function formatDate(value: string) {
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) {
-    return "Data indisponível";
-  }
-  return date.toLocaleDateString("pt-BR", {
-    day: "2-digit",
-    month: "long",
-    year: "numeric",
-  });
-}
-
-function formatDuration(totalMinutes: number) {
-  if (!totalMinutes) return "0m";
-  const hours = Math.floor(totalMinutes / 60);
-  const minutes = totalMinutes % 60;
-  if (!hours) return `${minutes}m`;
-  return `${hours}h ${minutes.toString().padStart(2, "0")}m`;
-}
-
-function formatCurrency(value: number) {
-  if (!value) return "—";
-  return new Intl.NumberFormat("pt-BR", {
-    style: "currency",
-    currency: "USD",
-    maximumFractionDigits: 0,
-  }).format(value);
-}
-
-function normalizeTrailerUrl(url?: string | null) {
-  if (!url) return undefined;
-  if (url.includes("embed")) return url;
-  if (url.includes("watch?v=")) {
-    return url.replace("watch?v=", "embed/");
-  }
-  return url;
-}

@@ -9,6 +9,8 @@ export type MovieProps = {
   trailerUrl?: string | null;
   duration: number;
   revenue: number;
+  budget: number;
+  language: string;
   createdAt: Date;
   updatedAt: Date;
   userId: number;
@@ -26,6 +28,8 @@ export class Movie {
   readonly trailerUrl?: string | null;
   readonly duration: number;
   readonly revenue: number;
+  readonly budget: number;
+  readonly language: string;
   readonly createdAt: Date;
   readonly updatedAt: Date;
   readonly userId: number;
@@ -42,6 +46,8 @@ export class Movie {
     this.trailerUrl = props.trailerUrl;
     this.duration = props.duration;
     this.revenue = props.revenue;
+    this.budget = props.budget;
+    this.language = props.language;
     this.createdAt = props.createdAt;
     this.updatedAt = props.updatedAt;
     this.userId = props.userId;

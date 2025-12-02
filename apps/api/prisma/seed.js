@@ -45,7 +45,7 @@ const MOVIES_DATA = [
       'Dom Cobb é um ladrão habilidoso, o melhor absoluto na perigosa arte da extração, roubando segredos valiosos do fundo do subconsciente durante o estado de sonho, quando a mente está mais vulnerável.',
     releaseDate: '2010-07-15',
     imageUrl:
-      'https://image.tmdb.org/t/p/original/9gk7admalsqW66Q6deRLsebxyDS.jpg',
+      'https://br.web.img3.acsta.net/medias/nmedia/18/87/32/31/20028688.jpg',
     rating: 84,
     classification: 14,
     duration: 148,
@@ -73,7 +73,7 @@ const MOVIES_DATA = [
       'As reservas naturais da Terra estão chegando ao fim e um grupo de astronautas recebe a missão de verificar possíveis planetas para receberem a população mundial, possibilitando a continuação da espécie.',
     releaseDate: '2014-11-05',
     imageUrl:
-      'https://image.tmdb.org/t/p/original/gEU2QniL6E8ahDaX06e8q281jZd.jpg',
+      'https://uauposters.com.br/media/catalog/product/4/1/411320150509-uau-posters-filmes-interestelar-interestellar.jpg',
     rating: 84,
     classification: 10,
     duration: 169,
@@ -101,7 +101,7 @@ const MOVIES_DATA = [
       'Peter Parker é desmascarado e não consegue mais separar sua vida normal dos grandes riscos de ser um super-herói. Quando ele pede ajuda ao Doutor Estranho, os riscos se tornam ainda mais perigosos, e o forçam a descobrir o que realmente significa ser o Homem-Aranha.',
     releaseDate: '2021-12-15',
     imageUrl:
-      'https://image.tmdb.org/t/p/original/1g0dhYtq4irTY1GPXvft6k4GY0d.jpg',
+      'https://img.elo7.com.br/product/zoom/2677B46/big-poster-filme-homem-aranha-de-volta-ao-lar-lo13-90x60-cm-marvel.jpg',
     rating: 80,
     classification: 12,
     duration: 148,

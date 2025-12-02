@@ -1,5 +1,5 @@
 import { memo, useCallback, useMemo, type ChangeEvent } from "react";
-import { Plus, Search } from "lucide-react";
+import { Search } from "lucide-react";
 import { useDebounce } from "use-debounce";
 
 import { useShallow } from "zustand/react/shallow";
@@ -9,6 +9,7 @@ import { MovieCard } from "../components/MovieCard";
 import { Pagination } from "../components/Pagination";
 import { useMoviesFilters, useFetchMovies } from "../hooks/useMovies";
 import { MoviesFiltersModal } from "../components/MoviesFiltersModal";
+import { AddMovieDrawer } from "../components/AddMovieDrawer";
 
 const PAGE_SIZE = 10;
 import backgroundImage from "@/assets/background-image.png";
@@ -57,14 +58,12 @@ export function MoviesPage() {
     [setPage]
   );
 
-  const handleAddMovie = useCallback(() => {}, []);
-
   return (
     <main className="flex-1 bg-background text-foreground">
       <div className="relative isolate">
         <div
           className="pointer-events-none absolute left-1/2 top-0 h-[564px] w-screen -translate-x-1/2 
-             bg-repeat-x bg-top "
+             bg-repeat-round-x bg-top "
           style={{
             backgroundImage: `url(${backgroundImage})`,
             backgroundSize: "auto",
@@ -84,13 +83,7 @@ export function MoviesPage() {
               </div>
               <div className="flex w-full gap-3 sm:w-auto">
                 <MoviesFiltersModal />
-                <Button
-                  className="flex flex-1 items-center justify-center gap-2 rounded-[4px] bg-primary px-5 py-2 text-sm font-semibold text-primary-foreground transition hover:bg-primary/90 sm:flex-none"
-                  onClick={handleAddMovie}
-                >
-                  <Plus className="h-4 w-4" />
-                  Adicionar filme
-                </Button>
+                <AddMovieDrawer />
               </div>
             </div>
             <div className="rounded-[8px] border border-border bg-card/90 p-6 shadow-[0_20px_60px_rgba(0,0,0,0.55)] sm:p-8">

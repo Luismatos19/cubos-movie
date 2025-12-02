@@ -23,6 +23,8 @@ const createMovie = (overrides: Partial<Movie> = {}) =>
     updatedAt: new Date('2024-01-02'),
     userId: 10,
     genres: ['Ação'],
+    budget: 100,
+    language: 'Português',
     ...overrides,
   });
 

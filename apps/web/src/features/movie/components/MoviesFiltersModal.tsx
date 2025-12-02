@@ -27,11 +27,10 @@ const GENRES = [
 
 export function MoviesFiltersModal() {
   const [open, setOpen] = useState(false);
-  
-  // Local state for form fields to avoid triggering refetch on every keystroke
+
   const filters = useMoviesFilters();
   const setFilters = useMoviesFilters((state) => state.setFilters);
-  
+
   const [localFilters, setLocalFilters] = useState({
     minDuration: filters.minDuration,
     maxDuration: filters.maxDuration,
@@ -41,7 +40,6 @@ export function MoviesFiltersModal() {
     maxClassification: filters.maxClassification,
   });
 
-  // Sync local state when modal opens
   useEffect(() => {
     if (open) {
       setLocalFilters({
@@ -95,7 +93,6 @@ export function MoviesFiltersModal() {
           </div>
 
           <div className="grid gap-4 py-4 max-h-[60vh] overflow-y-auto px-1">
-            {/* Duração */}
             <div className="grid gap-2">
               <Label>Duração (minutos)</Label>
               <div className="flex items-center gap-2">
@@ -106,7 +103,9 @@ export function MoviesFiltersModal() {
                   onChange={(e) =>
                     setLocalFilters((prev) => ({
                       ...prev,
-                      minDuration: e.target.value ? Number(e.target.value) : undefined,
+                      minDuration: e.target.value
+                        ? Number(e.target.value)
+                        : undefined,
                     }))
                   }
                 />
@@ -118,14 +117,15 @@ export function MoviesFiltersModal() {
                   onChange={(e) =>
                     setLocalFilters((prev) => ({
                       ...prev,
-                      maxDuration: e.target.value ? Number(e.target.value) : undefined,
+                      maxDuration: e.target.value
+                        ? Number(e.target.value)
+                        : undefined,
                     }))
                   }
                 />
               </div>
             </div>
 
-            {/* Data de Lançamento */}
             <div className="grid gap-2">
               <Label>Data de Lançamento</Label>
               <div className="flex items-center gap-2">
@@ -153,7 +153,6 @@ export function MoviesFiltersModal() {
               </div>
             </div>
 
-            {/* Classificação */}
             <div className="grid gap-2">
               <Label>Classificação Indicativa (até x anos)</Label>
               <Input
@@ -163,13 +162,14 @@ export function MoviesFiltersModal() {
                 onChange={(e) =>
                   setLocalFilters((prev) => ({
                     ...prev,
-                    maxClassification: e.target.value ? Number(e.target.value) : undefined,
+                    maxClassification: e.target.value
+                      ? Number(e.target.value)
+                      : undefined,
                   }))
                 }
               />
             </div>
 
-            {/* Gênero */}
             <div className="grid gap-2">
               <Label>Gênero</Label>
               <RadioGroup.Root
@@ -190,21 +190,26 @@ export function MoviesFiltersModal() {
                         <div className="h-2.5 w-2.5 rounded-full bg-current" />
                       </RadioGroup.Indicator>
                     </RadioGroup.Item>
-                    <Label htmlFor={genre} className="font-normal cursor-pointer">
+                    <Label
+                      htmlFor={genre}
+                      className="font-normal cursor-pointer"
+                    >
                       {genre}
                     </Label>
                   </div>
                 ))}
               </RadioGroup.Root>
               {localFilters.genre && (
-                 <Button 
-                   variant="ghost" 
-                   size="sm" 
-                   onClick={() => setLocalFilters(prev => ({ ...prev, genre: undefined }))}
-                   className="w-fit h-auto p-0 text-xs text-muted-foreground hover:text-foreground"
-                 >
-                   Limpar seleção de gênero
-                 </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() =>
+                    setLocalFilters((prev) => ({ ...prev, genre: undefined }))
+                  }
+                  className="w-fit h-auto p-0 text-xs text-muted-foreground hover:text-foreground"
+                >
+                  Limpar seleção de gênero
+                </Button>
               )}
             </div>
           </div>
@@ -230,4 +235,3 @@ export function MoviesFiltersModal() {
     </Dialog.Root>
   );
 }
-

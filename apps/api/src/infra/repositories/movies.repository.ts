@@ -27,6 +27,8 @@ type MoviePersistenceData = {
   trailerUrl?: string;
   duration?: number;
   revenue?: number;
+  budget?: number;
+  language?: string;
   genreIds?: number[];
 };
 
@@ -37,13 +39,14 @@ export class MoviesRepository {
   constructor(private readonly prisma: PrismaService) {}
 
   async create(userId: number, data: MoviePersistenceData): Promise<Movie> {
-    const { genreIds = [], revenue, ...movieData } = data;
+    const { genreIds = [], revenue, budget, ...movieData } = data;
 
     const movie = await this.prisma.movie.create({
       data: {
         ...movieData,
         userId,
-        revenue: this.formatRevenue(revenue),
+        revenue: this.formatDecimal(revenue),
+        budget: this.formatDecimal(budget),
         genres: this.buildGenresCreate(genreIds),
       },
       include: this.include,
@@ -56,13 +59,14 @@ export class MoviesRepository {
     id: number,
     data: Partial<MoviePersistenceData>,
   ): Promise<Movie> {
-    const { genreIds, revenue, ...movieData } = data;
+    const { genreIds, revenue, budget, ...movieData } = data;
 
     const movie = await this.prisma.movie.update({
       where: { id },
       data: {
         ...movieData,
-        revenue: this.formatRevenue(revenue),
+        revenue: this.formatDecimal(revenue),
+        budget: this.formatDecimal(budget),
         genres: this.buildGenresUpdate(genreIds),
       },
       include: this.include,
@@ -109,8 +113,28 @@ export class MoviesRepository {
     ]);
   }
 
-  private formatRevenue(revenue?: number): Prisma.Decimal | undefined {
-    return revenue !== undefined ? new Prisma.Decimal(revenue) : undefined;
+  async findByReleaseDate(date: Date): Promise<Movie[]> {
+    const startOfDay = new Date(date);
+    startOfDay.setHours(0, 0, 0, 0);
+
+    const endOfDay = new Date(date);
+    endOfDay.setHours(23, 59, 59, 999);
+
+    const movies = await this.prisma.movie.findMany({
+      where: {
+        releaseDate: {
+          gte: startOfDay,
+          lte: endOfDay,
+        },
+      },
+      include: this.include,
+    });
+
+    return movies.map(MovieMapper.toDomain);
+  }
+
+  private formatDecimal(value?: number): Prisma.Decimal | undefined {
+    return value !== undefined ? new Prisma.Decimal(value) : undefined;
   }
 
   private buildGenresCreate(genreIds: number[] = []) {

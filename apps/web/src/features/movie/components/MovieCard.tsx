@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { Card } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import type { Movie } from "../types/types";
+import { RatingBadge } from "./RatingBadge";
 
 type MovieCardProps = {
   movie: Movie;
@@ -34,9 +35,9 @@ export const MovieCard = memo(function MovieCard({
     return movie.genres.filter(Boolean).join(", ");
   }, [movie.genres]);
 
-  const handleNavigate = useCallback(() => {
+  const handleNavigate = () => {
     navigate(`/filmes/${movie.id}`);
-  }, [navigate, movie.id]);
+  };
 
   const handleKeyDown = useCallback(
     (event: KeyboardEvent<HTMLDivElement>): void => {
@@ -72,7 +73,7 @@ export const MovieCard = memo(function MovieCard({
           {rating !== null && <RatingBadge value={rating} />}
         </div>
 
-        <div className="absolute inset-x-0 bottom-0 flex flex-col justify-end bg-linear-to-t from-black/90 via-black/60 to-transparent p-4 pt-16 transition-all duration-300">
+        <div className="absolute inset-x-0 bottom-0 flex flex-col justify-end  p-4 pt-16 transition-all duration-300">
           <h3 className="line-clamp-2 text-lg font-bold text-white transition-all duration-300">
             {movie.title}
           </h3>
@@ -88,26 +89,5 @@ export const MovieCard = memo(function MovieCard({
         </div>
       </div>
     </Card>
-  );
-});
-
-const RatingBadge = memo(function RatingBadge({ value }: { value: number }) {
-  const clampedValue = Math.max(0, Math.min(100, Math.round(value)));
-  const angle = Math.round((clampedValue / 100) * 360);
-
-  return (
-    <div
-      className="relative flex h-24 w-24 items-center justify-center rounded-full"
-      style={{
-        background: `radial-gradient(closest-side, rgba(0,0,0,0.6) 79%, transparent 80% 100%), conic-gradient(#FFE000 ${angle}deg, rgba(255,255,255,0.2) ${angle}deg 360deg)`,
-      }}
-    >
-      <div className="flex h-[84px] w-[84px] flex-col items-center justify-center rounded-full bg-black/40 text-center backdrop-blur-sm">
-        <span className="text-xl font-bold text-[#FFE000]">
-          {clampedValue}
-          <span className="text-[10px] font-semibold text-white">%</span>
-        </span>
-      </div>
-    </div>
   );
 });
