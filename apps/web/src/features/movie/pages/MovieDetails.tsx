@@ -1,9 +1,8 @@
-import { memo, useMemo, useState } from "react";
+import { memo, useMemo, useState, lazy, Suspense } from "react";
 import { useParams } from "react-router-dom";
 
 import { Button } from "@/components/ui/button";
 import { RatingBadge } from "../components/RatingBadge";
-import { DeleteMovieDialog } from "../components/DeleteMovieDialog";
 import { useCreateMovie, useDeleteMovie } from "../hooks/useMovies";
 import {
   formatDate,
@@ -12,6 +11,12 @@ import {
   normalizeTrailerUrl,
 } from "../utils/helpers";
 import { StatChip } from "../components/StatChip";
+
+const DeleteMovieDialog = lazy(() =>
+  import("../components/DeleteMovieDialog").then((module) => ({
+    default: module.DeleteMovieDialog,
+  }))
+);
 
 export function MovieDetailsPage() {
   const { movieId } = useParams<{ movieId: string }>();
@@ -108,8 +113,8 @@ export function MovieDetailsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-background text-foreground">
-      <div className="relative h-[500px] w-full overflow-hidden lg:h-[600px]">
+    <article className="min-h-screen bg-background text-foreground">
+      <header className="relative h-[500px] w-full overflow-hidden lg:h-[600px]">
         <div className="absolute inset-0">
           <img
             src={posterImage}
@@ -119,18 +124,17 @@ export function MovieDetailsPage() {
         </div>
         <div className="absolute inset-0 bg-linear-to-r from-background via-background/80 to-transparent" />
         <div className="absolute inset-0 bg-linear-to-t from-background via-transparent to-transparent" />
-      </div>
+      </header>
 
       <div className="relative mx-auto -mt-[380px] flex w-full max-w-[1380px] flex-col px-4 pb-20 sm:px-8 lg:-mt-[480px] lg:px-12">
-        <div className="mb-8 hidden items-center justify-between lg:flex">
+        <header className="mb-8 hidden items-center justify-between lg:flex">
           <div>
             <h1 className="text-4xl font-bold text-foreground">{data.title}</h1>
             <p className="text-lg text-muted-foreground">
               Título original: {data.title}
             </p>
           </div>
-          {/* desktop */}
-          <div className="flex gap-4">
+          <nav className="flex gap-4" aria-label="Ações do filme">
             <Button
               variant="secondary"
               className="bg-secondary text-secondary-foreground hover:bg-secondary/80"
@@ -143,21 +147,20 @@ export function MovieDetailsPage() {
             >
               Deletar
             </Button>
-          </div>
-        </div>
+          </nav>
+        </header>
 
         <div className="flex flex-col gap-8 lg:flex-row">
-          <div className="shrink-0">
-            <div className="relative mx-auto aspect-2/3 w-full max-w-[300px] overflow-hidden rounded-[4px] shadow-[0px_4px_20px_rgba(0,0,0,0.5)] lg:w-[374px]">
+          <aside className="shrink-0">
+            <figure className="relative mx-auto aspect-2/3 w-full max-w-[300px] overflow-hidden rounded-[4px] shadow-[0px_4px_20px_rgba(0,0,0,0.5)] lg:w-[374px]">
               <img
                 src={posterImage}
                 alt={`Poster de ${data.title}`}
                 className="h-full w-full object-cover"
               />
-            </div>
-            {/* mobile */}
+            </figure>
             <div className="mt-6 flex flex-col gap-6 lg:hidden">
-              <div className="flex gap-4">
+              <nav className="flex gap-4" aria-label="Ações do filme">
                 <Button
                   variant="secondary"
                   onClick={handleDeleteClick}
@@ -168,21 +171,21 @@ export function MovieDetailsPage() {
                 <Button className="flex-1 bg-primary text-primary-foreground hover:bg-primary/90">
                   Editar
                 </Button>
-              </div>
+              </nav>
 
-              <div className="text-center">
+              <header className="text-center">
                 <h1 className="text-3xl font-bold text-foreground">
                   {data.title}
                 </h1>
                 <p className="text-base text-muted-foreground">
                   Título original: {data.title}
                 </p>
-              </div>
+              </header>
             </div>
-          </div>
+          </aside>
 
           <div className="flex flex-1 flex-col gap-6">
-            <div className="flex flex-wrap items-start justify-between gap-4">
+            <section className="flex flex-wrap items-start justify-between gap-4">
               <p className="text-lg italic text-foreground/90 opacity-90">
                 {description
                   ? "Aventure-se nesta história."
@@ -200,57 +203,61 @@ export function MovieDetailsPage() {
                 </div>
                 <RatingBadge value={ratingValue} />
               </div>
-            </div>
+            </section>
 
             <div className="flex flex-col gap-4 lg:flex-row">
-              <div className="flex flex-1 flex-col gap-4">
-                <div className="rounded-[4px] bg-card/60 p-4 backdrop-blur-sm border border-border/10">
-                  <h3 className="mb-2 text-xs font-bold uppercase text-muted-foreground">
+              <section className="flex flex-1 flex-col gap-4">
+                <section className="rounded-[4px] bg-card/60 p-4 backdrop-blur-sm border border-border/10">
+                  <h2 className="mb-2 text-xs font-bold uppercase text-muted-foreground">
                     Sinopse
-                  </h3>
+                  </h2>
                   <p className="text-sm leading-relaxed text-foreground">
                     {synopsis}
                   </p>
-                </div>
+                </section>
 
-                <div className="rounded-[4px] bg-card/60 p-4 border border-border/10">
-                  <h3 className="mb-3 text-sm font-bold text-muted-foreground">
+                <section className="rounded-[4px] bg-card/60 p-4 border border-border/10">
+                  <h2 className="mb-3 text-sm font-bold text-muted-foreground">
                     Gêneros
-                  </h3>
-                  <div className="flex flex-wrap gap-2">
+                  </h2>
+                  <ul className="flex flex-wrap gap-2" role="list">
                     {data.genres.length ? (
                       data.genres.map((genre) => (
-                        <span
-                          key={genre}
-                          className="rounded-[4px] bg-primary/18 w-[138px] h-[32px] flex items-center justify-center  text-xs font-semibold uppercase text-foreground backdrop-blur-sm"
-                        >
-                          {genre}
-                        </span>
+                        <li key={genre} role="listitem">
+                          <span className="rounded-[4px] bg-primary/18 w-[138px] h-[32px] flex items-center justify-center  text-xs font-semibold uppercase text-foreground backdrop-blur-sm">
+                            {genre}
+                          </span>
+                        </li>
                       ))
                     ) : (
-                      <span className="text-sm text-muted-foreground">
-                        Nenhum gênero cadastrado.
-                      </span>
+                      <li>
+                        <span className="text-sm text-muted-foreground">
+                          Nenhum gênero cadastrado.
+                        </span>
+                      </li>
                     )}
-                  </div>
-                </div>
-              </div>
+                  </ul>
+                </section>
+              </section>
 
-              <div className="flex w-full flex-col gap-4 lg:w-[200px]">
+              <aside className="flex w-full flex-col gap-4 lg:w-[200px]">
                 <StatChip label="Lançamento" value={releaseLabel} />
                 <StatChip label="Duração" value={durationLabel} />
                 <StatChip label="Situação" value={statusLabel} />
                 <StatChip label="Idioma" value={language} />
-              </div>
+              </aside>
             </div>
 
-            <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">
+            <section
+              className="grid grid-cols-2 gap-4 sm:grid-cols-3"
+              aria-label="Informações financeiras"
+            >
               <StatChip label="Orçamento" value={budgetLabel} size="sm" />
               <StatChip label="Receita" value={revenueLabel} size="sm" />
               <StatChip label="Lucro" value={profitLabel} size="sm" />
-            </div>
+            </section>
 
-            <div className="mt-4">
+            <section className="mt-4">
               <h2 className="mb-4 text-2xl font-bold text-foreground">
                 Trailer
               </h2>
@@ -269,18 +276,20 @@ export function MovieDetailsPage() {
                   </div>
                 )}
               </div>
-            </div>
+            </section>
           </div>
         </div>
       </div>
 
-      <DeleteMovieDialog
-        open={isDeleteDialogOpen}
-        onOpenChange={setIsDeleteDialogOpen}
-        onConfirm={handleConfirmDelete}
-        isDeleting={isDeleting}
-      />
-    </div>
+      <Suspense fallback={null}>
+        <DeleteMovieDialog
+          open={isDeleteDialogOpen}
+          onOpenChange={setIsDeleteDialogOpen}
+          onConfirm={handleConfirmDelete}
+          isDeleting={isDeleting}
+        />
+      </Suspense>
+    </article>
   );
 }
 

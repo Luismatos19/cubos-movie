@@ -1,10 +1,10 @@
 import { memo, useCallback, useMemo } from "react";
 import type { KeyboardEvent } from "react";
 import { useNavigate } from "react-router-dom";
-import { Card } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import type { Movie } from "../types/types";
 import { RatingBadge } from "./RatingBadge";
+import { Card } from "@/components/ui/card";
 
 type MovieCardProps = {
   movie: Movie;

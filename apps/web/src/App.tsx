@@ -1,14 +1,34 @@
-import { useEffect } from "react";
+import { useEffect, Suspense, lazy } from "react";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import { LoginPage } from "./features/auth/pages/Login";
-import { RegisterPage } from "./features/auth/pages/Register";
-import { MoviesPage } from "./features/movie/pages/Movies";
-import { MovieDetailsPage } from "./features/movie/pages/MovieDetails";
 import { useThemeStore } from "./stores/useThemeStore";
 import { Layout } from "./layout";
 import { PublicRoute } from "./routes/PublicRoutes";
 import { PrivateRoute } from "./routes/PrivateRoute";
 import { Toaster } from "./components/ui/sonner";
+
+const LoginPage = lazy(() =>
+  import("./features/auth/pages/Login").then((module) => ({
+    default: module.LoginPage,
+  }))
+);
+
+const RegisterPage = lazy(() =>
+  import("./features/auth/pages/Register").then((module) => ({
+    default: module.RegisterPage,
+  }))
+);
+
+const MoviesPage = lazy(() =>
+  import("./features/movie/pages/Movies").then((module) => ({
+    default: module.MoviesPage,
+  }))
+);
+
+const MovieDetailsPage = lazy(() =>
+  import("./features/movie/pages/MovieDetails").then((module) => ({
+    default: module.MovieDetailsPage,
+  }))
+);
 
 function App() {
   const initializeTheme = useThemeStore((state) => state.initializeTheme);
@@ -25,7 +45,9 @@ function App() {
             path="/login"
             element={
               <PublicRoute>
-                <LoginPage />
+                <Suspense fallback={<PageSkeleton />}>
+                  <LoginPage />
+                </Suspense>
               </PublicRoute>
             }
           />
@@ -33,7 +55,9 @@ function App() {
             path="/cadastro"
             element={
               <PublicRoute>
-                <RegisterPage />
+                <Suspense fallback={<PageSkeleton />}>
+                  <RegisterPage />
+                </Suspense>
               </PublicRoute>
             }
           />
@@ -41,7 +65,9 @@ function App() {
             path="/"
             element={
               <PrivateRoute>
-                <MoviesPage />
+                <Suspense fallback={<PageSkeleton />}>
+                  <MoviesPage />
+                </Suspense>
               </PrivateRoute>
             }
           />
@@ -49,7 +75,9 @@ function App() {
             path="/filmes/:movieId"
             element={
               <PrivateRoute>
-                <MovieDetailsPage />
+                <Suspense fallback={<PageSkeleton />}>
+                  <MovieDetailsPage />
+                </Suspense>
               </PrivateRoute>
             }
           />
@@ -57,6 +85,14 @@ function App() {
       </Routes>
       <Toaster />
     </BrowserRouter>
+  );
+}
+
+function PageSkeleton() {
+  return (
+    <div className="flex min-h-screen items-center justify-center bg-background">
+      <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
+    </div>
   );
 }
 
